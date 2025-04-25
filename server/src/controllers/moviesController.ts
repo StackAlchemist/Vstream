@@ -1,0 +1,31 @@
+import express,{Request, Response} from 'express'
+import Movies from '../models/moviesModel';
+import { v2 as cloudinary } from "cloudinary";
+
+export const postMovies = async (req: Request, res: Response)=>{
+
+    console.log(`i was hit with a ${req.method} request`)
+
+    try {
+        
+        const coverImgFile = (req.files as any).coverImg?.[0];
+        const videoFile = (req.files as any).video?.[0];
+        const {title} = req.body;
+
+        // Upload the file to Cloudinary and get the URL
+        const result = await cloudinary.uploader.upload(coverImgFile.path);
+    
+        const movies = await Movies.create({
+            title,
+            coverImg: result.secure_url, // Save the Cloudinary URL
+            video: `/uploads/${videoFile.filename}`
+        })
+    
+        res.status(201).json({movies, msg: 'movie uploaded successfully'})
+
+    } catch (error) {
+        console.error(error)
+        res.status(400).json({ error: 'There was a problem uploading the movie.' })
+    }
+
+}
