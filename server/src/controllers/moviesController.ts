@@ -29,3 +29,13 @@ export const postMovies = async (req: Request, res: Response)=>{
     }
 
 }
+
+export const getMovies = async (req: Request, res: Response)=>{
+    try {
+        const movies = await Movies.find({})
+        res.status(200).json(movies)
+    } catch (error) {
+        console.log('error fetching movies', error)
+        res.status(400).json({error: 'Oops, We`re having trouble fetching movies'})
+    }
+} 
