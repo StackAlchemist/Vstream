@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import movieRouter from './routes/movieRoutes';
 import connectCloudinary from './config/cloudinary';
 import fs from 'fs';
+import userRouter from './routes/userRoutes';
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ mongoose.connect(process.env.MONGODB_URI || '')
 
 
 app.use('/api/movies', movieRouter)
+app.use('/api/auth/', userRouter)
 app.get('/video', (req, res)=>{
     const range: string | undefined = req.headers.range;
     if(!range) res.status(400).send("Requires range header")

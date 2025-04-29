@@ -19,16 +19,16 @@ const Navbar = () => {
         <Link to="/" className="hover:text-red-500 cursor-pointer">
           Home
         </Link>
-        <Link to="" className="hover:text-red-500 cursor-pointer">
+        <Link to="/tv-shows" className="hover:text-red-500 cursor-pointer">
           TV Shows
         </Link>
-        <Link to="" className="hover:text-red-500 cursor-pointer">
+        <Link to="/movies" className="hover:text-red-500 cursor-pointer">
           Movies
         </Link>
-        <Link to="" className="hover:text-red-500 cursor-pointer">
+        <Link to="/new-and-popular" className="hover:text-red-500 cursor-pointer">
           New & Popular
         </Link>
-        <Link to="" className="hover:text-red-500 cursor-pointer">
+        <Link to="/my-list" className="hover:text-red-500 cursor-pointer">
           My List
         </Link>
       </ul>
@@ -49,16 +49,16 @@ const Navbar = () => {
           <Link to="/" className="hover:text-red-500 cursor-pointer">
             Home
           </Link>
-          <Link to="" className="hover:text-red-500 cursor-pointer">
+          <Link to="tv-shows" className="hover:text-red-500 cursor-pointer">
             TV Shows
           </Link>
-          <Link to="" className="hover:text-red-500 cursor-pointer">
+          <Link to="/movies" className="hover:text-red-500 cursor-pointer">
             Movies
           </Link>
-          <Link to="" className="hover:text-red-500 cursor-pointer">
+          <Link to="/new-and-popular" className="hover:text-red-500 cursor-pointer">
             New & Popular
           </Link>
-          <Link to="" className="hover:text-red-500 cursor-pointer">
+          <Link to="/my-list" className="hover:text-red-500 cursor-pointer">
             My List
           </Link>
         </ul>
