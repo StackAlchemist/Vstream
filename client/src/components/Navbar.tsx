@@ -1,10 +1,21 @@
 import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { asset } from "../assets/assets";
 import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
+  const [name, setName] = useState<string | null>(localStorage.getItem('name'));
+
+  useEffect(() => {
+    const listener = () => {
+      setName(localStorage.getItem('name'));
+    };
+    window.addEventListener('storage', listener);
+    return () => {
+      window.removeEventListener('storage', listener);
+    };
+  }, []);
 
   return (
     <nav className="bg-black text-white px-6 py-4 flex items-center justify-between ">
@@ -34,7 +45,10 @@ const Navbar = () => {
       </ul>
 
       {/* Profile */}
+      <div className="flex items-center gap-2">
+        <p>{name}</p>
       <div className="hidden md:block w-8 h-8 bg-gray-500 rounded-full"></div>
+      </div>
 
       {/* Mobile Menu Icon */}
       <div className="md:hidden">

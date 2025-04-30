@@ -35,7 +35,7 @@ const TvShows = () => {
   return (
     <div className="px-6 py-4">
       <h2 className="text-2xl font-bold text-white mb-4">TV Shows</h2>
-      <div className="flex gap-4 overflow-x-auto pb-2">
+      <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
         {loading
           ? Array.from({ length: 7 }).map((_, i) => <SkeletonCard key={i} />)
           : movies.map((movie, i) => (

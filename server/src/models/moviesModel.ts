@@ -5,6 +5,14 @@ const moviesSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    genre: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String,
+        required: true
+    },
     coverImg: {
         type: String,
         required: true
@@ -12,7 +20,27 @@ const moviesSchema = new mongoose.Schema({
     video: {
         type: String,
         required: true
-    }
+    },
+    rating: {
+        type: [{
+            userId: String,
+            no: Number
+        }],
+        required: false,
+        default: []
+    },
+    comments: {
+        type: [{
+            userId: String,
+            text: String
+        }],
+        required: false,
+        default: []
+    },
+    director: {
+        type: String,
+        required: true
+    },
 }, {
     timestamps: true
 });

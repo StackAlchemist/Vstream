@@ -6,11 +6,13 @@ import Movies from "./pages/Movies"
 import TvShowPg from "./pages/TvShowPg"
 import NewAndPop from "./pages/NewAndPop"
 import MyListPg from './pages/MyListPg'
+import { ToastContainer } from "react-toastify"
 
 const App = () => {
   return (
   <div className="bg-gray-950">
     <Navbar />
+    <ToastContainer />
     <Routes>
       <Route path="/" element={<Home/>} />
       <Route path="/login" element={<Login/>} />

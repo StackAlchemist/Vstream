@@ -36,7 +36,7 @@ const MyList = () => {
     <div className="px-6 py-4">
       <h2 className="text-2xl font-bold text-white">My List</h2>
       <p className="text-sm mb-4 text-[#f8f8f8]">These are the movies you added to your list.</p>
-      <div className="flex gap-4 overflow-x-auto pb-2">
+      <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
         {loading
           ? Array.from({ length: 7 }).map((_, i) => <SkeletonCard key={i} />)
           : movies.map((movie, i) => (

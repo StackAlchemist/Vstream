@@ -3,6 +3,7 @@ import User from '../models/userModel'
 import jwt from 'jsonwebtoken'
 import { handleSignupErrors } from '../utils/errorHandler'
 import dotenv from 'dotenv'
+import Directors from '../models/adminModel'
 
 dotenv.config();
 
@@ -14,12 +15,12 @@ const createToken = (id: string)=>{
     })
 }
 
-export const signup = async (req: Request, res: Response) =>{
+export const adminSignup = async (req: Request, res: Response) =>{
     console.log(req.body)
     try {
         const { name, email, password, isAdmin } = req.body
         
-        const user = await User.create({
+        const user = await Directors.create({
             name,
             email,
             password,
@@ -38,10 +39,10 @@ export const signup = async (req: Request, res: Response) =>{
 }
 
 
-export const login = async (req: Request, res: Response) => {
+export const adminLogin = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-    const user = await User.login(email, password);
+    const user = await Directors.login(email, password);
     const token = createToken(user._id.toString());
     res.cookie("authToken", token, { httpOnly: true, maxAge: maxAge * 1000 });
     res
@@ -58,7 +59,7 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const logout = async (req: Request, res: Response) => {
+export const adminLogout = async (req: Request, res: Response) => {
   try {
     res.cookie("authToken", "", { httpOnly: true, maxAge: 0 });
     res.status(200).json({ message: "logout successful" });

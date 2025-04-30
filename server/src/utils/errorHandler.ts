@@ -30,7 +30,7 @@ interface ErrorMessages {
     }
   
     if (err.message === 'I know not this man') {
-      errors.email = 'Email not found';
+      errors.email = 'Invalid Email or Password';
     }
   
     return errors;

@@ -10,15 +10,18 @@ export const postMovies = async (req: Request, res: Response)=>{
         
         const coverImgFile = (req.files as any).coverImg?.[0];
         const videoFile = (req.files as any).video?.[0];
-        const {title} = req.body;
+        const {title, genre, description, director} = req.body;
 
         // Upload the file to Cloudinary and get the URL
         const result = await cloudinary.uploader.upload(coverImgFile.path);
     
         const movies = await Movies.create({
             title,
+            genre,
+            description,
             coverImg: result.secure_url, // Save the Cloudinary URL
-            video: `/uploads/${videoFile.filename}`
+            video: `/uploads/${videoFile.filename}`,
+            director
         })
     
         res.status(201).json({movies, msg: 'movie uploaded successfully'})

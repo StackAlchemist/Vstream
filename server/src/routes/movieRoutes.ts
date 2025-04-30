@@ -1,6 +1,7 @@
 import express from 'express'
 import { getMovies, postMovies } from '../controllers/moviesController'
 import upload from '../middlewares/multer';
+import { requireAuth } from '../middlewares/authMiddleware';
 
 const movieRouter = express.Router()
 
