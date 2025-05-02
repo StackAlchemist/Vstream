@@ -1,22 +1,47 @@
-import { useState, ChangeEvent, FormEvent } from "react";
+import axios from "axios";
+import { useState, ChangeEvent, FormEvent, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [form, setForm] = useState({ email: "", password: "", name: "" });
+  const navigate = useNavigate()
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (isLogin) {
-      // Call login API here
-      console.log("Logging in:", form);
-    } else {
-      // Call signup API here
-      console.log("Signing up:", form);
-    }
+    try {
+      if (isLogin){
+        const response = await axios.post(import.meta.env.VITE_API_URL + '/admin/login', { email: form.email, password: form.password });
+        console.log('login:',response.data);
+        localStorage.setItem('authToken', response.data.token)
+        localStorage.setItem('name', response.data.user.name)
+        localStorage.setItem('userId', response.data.user.id)
+        toast.success(response.data.message)
+      }else{
+        const response = await axios.post(import.meta.env.VITE_API_URL + '/admin/signup', { name: form.name, email: form.email, password: form.password });
+        console.log('signup:',response.data);
+        localStorage.setItem('authToken', response.data.token)
+        localStorage.setItem('name', response.data.user.name)
+        localStorage.setItem('userId', response.data.user.id)
+        toast.success(response.data.message)
+      } 
+      navigate('/')
+    } catch (err: any) {
+      console.error(err);
+      if (err.response && err.response.status === 400) {
+        // Validation errors from backend
+        console.error('Validation errors:', err.response.data.errors || {});
+      } else {
+        // Other (network/server) errors
+        console.error('Authentication error:', err);
+        toast.error('Something went wrong. Please try again.');
+      }
+    };
   };
 
   return (
