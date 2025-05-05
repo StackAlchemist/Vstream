@@ -1,7 +1,7 @@
 import { FilmIcon, ClapperboardIcon, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const UploadSelectModal = ({isOpen, setIsOpen}) => {
+const UploadSelectModal = ({isOpen, setIsOpen}:  {isOpen: boolean, setIsOpen: (isOpen: boolean)=>void}) => {
     const navigate = useNavigate()
     return (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm">

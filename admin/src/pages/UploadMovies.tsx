@@ -100,22 +100,22 @@ const UploadMovies = () => {
           />
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {genresList.map((genre) => (
-              <label
-                key={genre}
-                className="flex items-center gap-2 text-sm text-gray-300"
-              >
-                <input
-                  type="checkbox"
-                  value={genre}
-                  checked={formData.genre.includes(genre)}
-                  onChange={() => handleGenreChange(genre)}
-                  className="accent-blue-500"
-                />
-                {genre}
-              </label>
-            ))}
-          </div>
+              {genresList.map((genre) => (
+                <label
+                  key={genre}
+                  className="flex items-center gap-2 text-sm text-gray-300"
+                >
+                  <input
+                    type="checkbox"
+                    value={genre}
+                    checked={formData.genre.includes(genre)}
+                    onChange={() => handleGenreChange(genre)}
+                    className="accent-blue-500"
+                  />
+                  {genre}
+                </label>
+              ))}
+            </div>
 
           <textarea
             name="description"

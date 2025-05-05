@@ -18,8 +18,8 @@ const seriesSchema = new mongoose.Schema({
     required: true
   },
   seasons: {
-    season_title: String,
     type: [{
+      season_title: String,
       episodes: [{
         episode_title: {type: String, required: true},
         video: {

@@ -41,3 +41,47 @@ export const postSeries = async (req: Request, res: Response)=>{
     }
 
 }
+
+export const editSeries = async (req: Request, res: Response)=>{
+    try {
+        const videoFile = (req.files as any).video?.[0]
+        const { ep_title, description, id, s_id, ep_id } = req.body;
+
+        if(!videoFile){
+            return res.status(400).json({ error: "Video file is required." });
+        }
+
+        const videoUrl = `/uploads/${videoFile.filename}`;
+
+
+        const series = await Series.findById(id)
+        if(!series){
+            return res.status(404).json({error: "Series not found"})
+        }
+
+        const season = series.seasons.id(s_id)
+        if(!season) {
+            return res.status(404).json({ error: "Season not found." });
+          }
+
+        const newEpisode = {
+            episode_title: ep_title,
+            description,
+            video: videoUrl
+        }
+
+        season.episodes.push(newEpisode)
+
+        await series.save()
+
+        res.status(200).json({ msg: "Episode uploaded successfully", series });
+      
+
+    } catch (error) {
+        
+        console.error(error)
+        res.status(400).json({ error: 'There was a problem updating the series.' })
+    }
+
+
+}
