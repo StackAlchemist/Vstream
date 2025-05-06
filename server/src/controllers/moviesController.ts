@@ -1,6 +1,8 @@
 import express,{Request, Response} from 'express'
 import Movies from '../models/moviesModel';
 import { v2 as cloudinary } from "cloudinary";
+import User from '../models/userModel';
+import Directors from '../models/adminModel';
 
 export const postMovies = async (req: Request, res: Response)=>{
 
@@ -34,6 +36,7 @@ export const postMovies = async (req: Request, res: Response)=>{
 
 }
 
+
 export const getMovies = async (req: Request, res: Response)=>{
     try {
         const movies = await Movies.find({})
@@ -41,5 +44,21 @@ export const getMovies = async (req: Request, res: Response)=>{
     } catch (error) {
         console.log('error fetching movies', error)
         res.status(400).json({error: 'Oops, We`re having trouble fetching movies'})
+    }
+} 
+export const getMovieById = async (req: Request, res: Response)=>{
+    try {
+        const movieId: string = req.params.id;
+
+        // Populate the director's `name` field from the referenced Director model
+        const movie = await Movies.findById(movieId).populate('director', 'name');
+    
+        if (!movie) {
+          return res.status(404).json({ success: false, error: 'Movie not found' });
+        }
+        res.status(200).json(movie);
+    } catch (error) {
+        console.error('Error fetching movie', error);
+        res.status(500).json({ error: 'Oops, We`re having trouble fetching the movie' });
     }
 } 

@@ -16,6 +16,8 @@ const Home = () => {
     };
   }, []);
 
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-white p-8">
         {isOpen && <UploadSelectModal isOpen={isOpen} setIsOpen={setIsOpen}/>}

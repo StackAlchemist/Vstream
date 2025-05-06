@@ -85,3 +85,13 @@ export const editSeries = async (req: Request, res: Response)=>{
 
 
 }
+
+export const getSeries = async (req: Request, res: Response)=>{
+    try {
+        const series = await Series.find();
+        res.status(200).json({ series });
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ error: 'There was a problem fetching the series.' })
+    }
+}

@@ -4,6 +4,8 @@ import Home from "./pages/Home"
 import { ToastContainer } from "react-toastify"
 import UploadMovies from "./pages/UploadMovies"
 import UploadSeries from "./pages/UploadSeries"
+import View from "./pages/View"
+import MovieDetails from "./pages/movieDetails"
 
 const App = () => {
   return (
@@ -15,6 +17,8 @@ const App = () => {
         <Route path='/upload-movie' element={<UploadMovies />}/>
         <Route path='/upload-series' element={<UploadSeries />}/>
         <Route path='/upload' element={<UploadSeries />}/>
+        <Route path='/view' element={<View />}/>
+        <Route path="/view/:id" element={<MovieDetails />} />
       </Routes>
     </div>
   )

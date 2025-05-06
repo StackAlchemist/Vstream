@@ -1,5 +1,5 @@
 import express from 'express'
-import { getMovies, postMovies } from '../controllers/moviesController'
+import { getMovieById, getMovies, postMovies } from '../controllers/moviesController'
 import upload from '../middlewares/multer';
 import { requireAuth } from '../middlewares/authMiddleware';
 
@@ -11,5 +11,6 @@ movieRouter.post('/post', upload.fields([
 ]), postMovies)
 
 movieRouter.get('/get', getMovies)
+movieRouter.get('/get/:id', getMovieById)
 
 export default movieRouter;
