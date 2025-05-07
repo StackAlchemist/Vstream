@@ -1,6 +1,7 @@
 import express,{Request, Response} from 'express'
 import { v2 as cloudinary } from "cloudinary";
 import Series from '../models/seriesModel';
+import Directors from '../models/adminModel';
 
 export const postSeries = async (req: Request, res: Response)=>{
 
@@ -90,6 +91,24 @@ export const getSeries = async (req: Request, res: Response)=>{
     try {
         const series = await Series.find();
         res.status(200).json({ series });
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ error: 'There was a problem fetching the series.' })
+    }
+}
+
+export const getSeriesById = async (req: Request, res: Response)=>{
+    try {
+
+        const { id } = req.params;
+
+        const series = await Series.findById(id);
+        if (!series) {
+            return res.status(404).json({ error: 'Series not found.' });
+        }
+
+        const director = await Directors.findById(series.director).select('name')
+        res.status(200).json( {series, director} );
     } catch (error) {
         console.error(error)
         res.status(500).json({ error: 'There was a problem fetching the series.' })

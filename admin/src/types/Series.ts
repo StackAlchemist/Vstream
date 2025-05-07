@@ -5,11 +5,13 @@ export interface Series {
     description: string;
     coverImg: string;
     seasons: {
+      _id: string
       season_title: string;
       episodes: {
         episode_title: string;
         video: string;
         description: string;
+        _id: string
       }[];
     }[];
     rating: {

@@ -6,6 +6,7 @@ import UploadMovies from "./pages/UploadMovies"
 import UploadSeries from "./pages/UploadSeries"
 import View from "./pages/View"
 import MovieDetails from "./pages/movieDetails"
+import SeriesDetails from "./pages/SeriesDetails"
 
 const App = () => {
   return (
@@ -19,6 +20,7 @@ const App = () => {
         <Route path='/upload' element={<UploadSeries />}/>
         <Route path='/view' element={<View />}/>
         <Route path="/view/:id" element={<MovieDetails />} />
+        <Route path="/view-series/:id" element={<SeriesDetails />} />
       </Routes>
     </div>
   )

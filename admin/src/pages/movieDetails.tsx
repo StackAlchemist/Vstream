@@ -2,6 +2,8 @@ import axios from "axios"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import { Movies } from "../types/Movies"
+import { Play, PlayCircle, PlayIcon } from "lucide-react"
+import { FaPlay } from "react-icons/fa"
 
 
 const MovieDetails = () => {
@@ -50,7 +52,9 @@ const MovieDetails = () => {
             </div>
 
             <p className="text-gray-300">{movie.description}</p>
+            <button className="flex gap-3 items-center bg-purple-600 rounded-full px-3 py-2 mt-2"> Play <FaPlay /></button>
           </div>
+          
 
           {/* <div className="mt-6 text-sm text-gray-400">
             <p>Release Date: {new Date(movie.releaseDate).toLocaleDateString()}</p>

@@ -44,7 +44,7 @@ const View = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
         {series?.map((item) => (
-          <div key={item._id} className="bg-gray-800 rounded-xl p-4">
+          <div onClick={()=>navigate(`/view-series/${item._id}`)}  key={item._id} className="bg-gray-800 rounded-xl p-4">
             <img
               src={item.coverImg}
               alt={item.title}
