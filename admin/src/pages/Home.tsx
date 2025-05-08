@@ -47,9 +47,7 @@ const Home = () => {
         </div>
       </section>
 
-      <footer className="mt-20 text-center text-gray-500 text-sm">
-        &copy; {new Date().getFullYear()} StreamZone Admin • All rights reserved.
-      </footer>
+
     </div>
   );
 };

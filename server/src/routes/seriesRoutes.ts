@@ -1,5 +1,5 @@
 import express from "express";
-import { editSeries, getSeries, getSeriesById, postSeries } from "../controllers/seriesController";
+import { deleteSeries, editSeries, getSeries, getSeriesById, postSeries } from "../controllers/seriesController";
 import upload from "../middlewares/multer";
 
 const seriesRouter = express.Router();
@@ -15,5 +15,6 @@ seriesRouter.put('/edit', upload.fields([
 
 seriesRouter.get('/get', getSeries)
 seriesRouter.get('/get/:id', getSeriesById)
+seriesRouter.delete('/delete/:id', deleteSeries)
 
 export default seriesRouter;

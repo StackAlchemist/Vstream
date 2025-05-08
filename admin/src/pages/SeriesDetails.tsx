@@ -1,12 +1,14 @@
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { Series } from "../types/Series"
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { FaPlay } from "react-icons/fa"
+import { toast } from "react-toastify"
 
 const SeriesDetails = () => {
   const { id } = useParams<{ id: string }>()
   const [serie, setSerie] = useState<Series | null>(null)
+  const navigate = useNavigate()
 
   const fetchMovie = async () => {
     try {
@@ -17,6 +19,22 @@ const SeriesDetails = () => {
       console.log(response.data)
     } catch (error) {
       console.error("Failed to fetch movie:", error)
+    }
+  }
+
+  const deleteSeries = async () => {
+    try {
+      const response = await axios.delete(
+        import.meta.env.VITE_API_URL + `/series/delete/${id}`
+      )
+      if (response) {
+        toast.success("Deleted successfully")
+        navigate("/view")
+      } else {
+        toast.error("Failed to delete")
+      }
+    } catch (error) {
+      console.log(error)
     }
   }
 
@@ -80,6 +98,17 @@ const SeriesDetails = () => {
       </div>
       {/* Debug ID (optional) */}
       {/* <p className="text-xs text-gray-600 text-center mt-10">Series ID: {id}</p> */}
+      <div className="flex justify-center gap-6 mt-12">
+        <button className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 px-8 rounded-full transition-all duration-200">
+          Edit
+        </button>
+        <button
+        onClick={deleteSeries}
+          className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-8 rounded-full transition-all duration-200"
+        >
+          Delete
+        </button>
+      </div>
     </div>
   )
 }

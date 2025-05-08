@@ -114,3 +114,15 @@ export const getSeriesById = async (req: Request, res: Response)=>{
         res.status(500).json({ error: 'There was a problem fetching the series.' })
     }
 }
+
+export const deleteSeries = async(req: Request, res: Response)=>{
+    try {
+        const sId: String = req.params.id;
+
+        const movie = await Series.findByIdAndDelete(sId)
+        res.status(200).json({message: 'deleted successfully'})
+    } catch (error) {
+        console.error(error)
+        res.status(400).json({message: 'internal server error'})
+    }
+}

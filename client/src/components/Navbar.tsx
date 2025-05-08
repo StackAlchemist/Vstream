@@ -31,20 +31,16 @@ const Navbar = () => {
           Home
         </Link>
         <Link to="/tv-shows" className="hover:text-red-500 cursor-pointer">
-          TV Shows
+          Series
         </Link>
         <Link to="/movies" className="hover:text-red-500 cursor-pointer">
           Movies
         </Link>
-        <Link to="/new-and-popular" className="hover:text-red-500 cursor-pointer">
-          New & Popular
-        </Link>
-        <Link to="/my-list" className="hover:text-red-500 cursor-pointer">
-          My List
-        </Link>
       </ul>
 
-      {/* Profile */}
+      {/* Profile */}{
+        
+      }
       <div className="flex items-center gap-2">
         <p>{name}</p>
       <div className="hidden md:block w-8 h-8 bg-gray-500 rounded-full"></div>

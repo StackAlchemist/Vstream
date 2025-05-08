@@ -38,8 +38,17 @@ const View = () => {
     fetchSeries()
   }, [])
 
+  if(!series && !movies){
+    return(
+      <div className="flex justify-center items-center">
+        <p>Loading...</p>
+        <div className="animate-pulse-fast"></div>
+      </div>
+    )
+  }
+
   return (
-    <div className="text-white pt-4 ">
+    <div className="text-white pt-4 h-screen">
       <h1 className="text-2xl font-bold mb-4 mt-">Uploaded Series</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">

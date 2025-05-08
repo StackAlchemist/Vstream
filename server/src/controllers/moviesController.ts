@@ -61,4 +61,16 @@ export const getMovieById = async (req: Request, res: Response)=>{
         console.error('Error fetching movie', error);
         res.status(500).json({ error: 'Oops, We`re having trouble fetching the movie' });
     }
-} 
+}
+
+export const deleteMovie = async(req: Request, res: Response)=>{
+    try {
+        const movieId: String = req.params.id;
+
+        const movie = await Movies.findByIdAndDelete(movieId)
+        res.status(200).json({message: 'deleted successfully'})
+    } catch (error) {
+        console.error(error)
+        res.status(400).json({message: 'internal server error'})
+    }
+}
