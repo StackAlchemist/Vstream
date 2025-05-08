@@ -74,3 +74,7 @@ export const deleteMovie = async(req: Request, res: Response)=>{
         res.status(400).json({message: 'internal server error'})
     }
 }
+
+const editMovies = (req: Request, res: Response) =>{
+    
+}

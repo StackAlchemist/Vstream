@@ -1,4 +1,7 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
+import { Movies } from "../types/Movies";
+
 
 const SkeletonCard = () => (
   <div className="w-48 h-72 bg-gray-800 rounded-lg animate-pulse"></div>
@@ -17,19 +20,21 @@ const MovieCard = ({ title, image }: { title: string; image: string }) => (
 
 const TrendingMovies = () => {
   const [loading, setLoading] = useState(true);
-  const [movies, setMovies] = useState<{ title: string; image: string }[]>([]);
+  const [movies, setMovies] = useState<Movies[]>([]);
+
+  const fetchMovies = async () => {
+    try {
+      const response = await axios.get(import.meta.env.VITE_API_URL + "/movies/get")
+      setMovies(response.data)
+    } catch (error) {
+      console.log(error, "error fetching movies")
+    }
+  }
 
   useEffect(() => {
     // Simulate API loading
     setTimeout(() => {
-      setMovies([
-        { title: "Dune", image: "/images.jpg" },
-        { title: "Oppenheimer", image: "/images.jpg" },
-        { title: "Avatar 2", image: "/images.jpg" },
-        { title: "John Wick 4", image: "/images.jpg" },
-        { title: "The Batman", image: "/images.jpg" },
-        { title: "Sinners", image: "/images.jpg" },
-      ]);
+      fetchMovies()
       setLoading(false);
     }, 2000);
   }, []);
@@ -41,7 +46,7 @@ const TrendingMovies = () => {
         {loading
           ? Array.from({ length: 7 }).map((_, i) => <SkeletonCard key={i} />)
           : movies.map((movie, i) => (
-              <MovieCard key={i} title={movie.title} image={movie.image} />
+              <MovieCard key={i} title={movie.title} image={movie.coverImg} />
             ))}
       </div>
     </div>
