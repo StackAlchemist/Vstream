@@ -1,26 +1,30 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Movies } from "../types/Movies";
+import { useNavigate } from "react-router-dom";
+
 
 
 const SkeletonCard = () => (
   <div className="w-48 h-72 bg-gray-800 rounded-lg animate-pulse"></div>
 );
-
-const MovieCard = ({ title, image }: { title: string; image: string }) => (
-  <div className="w-48 flex-shrink-0 cursor-pointer">
+const MovieCard = ({ title, image, id, navigate }: { title: string; image: string, id: string, navigate: React.FC }) => (
+  <div onClick={()=>navigate(`/movie/${id}`)} className="w-48 relative flex-shrink-0 cursor-pointer hover:scale-105 transition-transform duration-300 group">
     <img
       src={image}
       alt={title}
-      className="w-full h-72 object-cover rounded-lg hover:scale-105 transition-transform"
+      className="w-full h-72 object-cover rounded-lg shadow-md"
     />
-    <p className="mt-2 text-white text-sm text-center">{title}</p>
+    <div className="absolute bottom-0 left-0 w-full px-2 py-2 backdrop-blur-lg bg-black/47 border border-white/20 shadow-lg text-slate-200 rounded-b-lg">
+      <p className=" text-sm text-center font-medium line-clamp-2">{title}</p>
+    </div>
   </div>
 );
 
 const TrendingMovies = () => {
   const [loading, setLoading] = useState(true);
   const [movies, setMovies] = useState<Movies[]>([]);
+  const navigate = useNavigate()
 
   const fetchMovies = async () => {
     try {
@@ -45,8 +49,8 @@ const TrendingMovies = () => {
       <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
         {loading
           ? Array.from({ length: 7 }).map((_, i) => <SkeletonCard key={i} />)
-          : movies.map((movie, i) => (
-              <MovieCard key={i} title={movie.title} image={movie.coverImg} />
+          : movies.map((movie) => (
+              <MovieCard key={movie._id} title={movie.title} image={movie.coverImg} id={movie._id} navigate={navigate}/>
             ))}
       </div>
     </div>

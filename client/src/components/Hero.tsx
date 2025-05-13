@@ -6,43 +6,52 @@ import { useEffect, useState } from "react";
 import { Series } from "../types/Series";
 
 const Hero = () => {
-
-  const [series, setSeries] = useState<Series[]>([])
+  const [series, setSeries] = useState<Series[]>([]);
 
   const fetchSeries = async () => {
     try {
-      const response = await axios.get(import.meta.env.VITE_API_URL + "/series/get")
-      setSeries(response.data.series)
+      const response = await axios.get(import.meta.env.VITE_API_URL + "/series/get");
+      console.log(response.data.series);
+      setSeries(response.data.series);
     } catch (error) {
-      console.log(error, "error fetching series")
+      console.log(error, "error fetching series");
     }
-  }
+  };
 
-  useEffect(()=>{
-    fetchSeries()
-  },[])
+  useEffect(() => {
+    fetchSeries();
+  }, []);
+
+  const selectedSeries = series[1];
 
   return (
-    <div className="h-[50vh] w-[97%] bg-gray-400 rounded-md shadow-lg bg-cover bg-" style={{ backgroundImage: `url(${asset.heroImg})` }}>
-      <div className="flex flex-col gap-1 mt-10 ml-5">
-        <div className="bg-gray-600 shadow-lg h-4 w-52 rounded-full">{series[1].seasons.season_title}</div>
-        <div className="bg-gray-600 shadow-lg h-4 w-64 rounded-full">{series[1].description}</div>
-        <div className="bg-gray-600 shadow-lg h-4 w-72 rounded-full"></div>
-      </div>
+    <div
+      className="relative h-[50vh] w-[97%] rounded-md shadow-lg bg-cover bg-center overflow-hidden"
+      style={{ backgroundImage: `url(${asset.heroImg})` }}
+    >
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-10" />
 
-      <div className="flex justify-start mt-10 items-center h-full">
-        <button className="flex items-center justify-center gap-2 bg-gray-600 h-12 w-32 rounded-md m-4 shadow-lg hover:bg-gray-700 transition-colors duration-200 ease-in-out text-white">
-          <p>Play</p>
-          <FaPlay color="white"/>
+      {/* Content */}
+      <div className="relative z-20 h-full flex flex-col justify-center px-8 text-white">
+        <h1 className="text-3xl font-bold mb-2 drop-shadow-lg">
+          {selectedSeries?.seasons[0]?.season_title || "Loading..."}
+        </h1>
+        <p className="text-lg max-w-xl mb-6 drop-shadow-md">
+          {selectedSeries?.description || "Stay tuned for more series info!"}
+        </p>
+
+        <div className="flex gap-4">
+          <button className="flex items-center gap-2 bg-white text-black font-semibold px-5 py-3 rounded-md shadow-md hover:bg-gray-200 transition">
+            <FaPlay /> <span>Play</span>
           </button>
-        <button className="flex items-center justify-center gap-2 bg-gray-600 h-12 w-32 rounded-md m-4 shadow-lg hover:bg-gray-700 transition-colors duration-200 ease-in-out text-white">
-          <p>See info</p>
-          <Info />
-        </button>
+          <button className="flex items-center gap-2 bg-gray-700 text-white px-5 py-3 rounded-md shadow-md hover:bg-gray-600 transition">
+            <Info size={20} /> <span>More Info</span>
+          </button>
+        </div>
       </div>
-      
     </div>
-  )
-}
+  );
+};
 
-export default Hero
+export default Hero;

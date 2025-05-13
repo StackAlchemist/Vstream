@@ -7,6 +7,8 @@ import TvShowPg from "./pages/TvShowPg"
 import NewAndPop from "./pages/NewAndPop"
 import MyListPg from './pages/MyListPg'
 import { ToastContainer } from "react-toastify"
+import MovieDetails from "./pages/MovieDetails"
+import SeriesDetails from "./pages/SeriesDetails"
 
 const App = () => {
   return (
@@ -20,6 +22,8 @@ const App = () => {
       <Route path="/tv-shows" element={<TvShowPg/>} />
       <Route path="/new-and-popular" element={<NewAndPop/>} />
       <Route path="/my-list" element={<MyListPg/>} />
+      <Route path="/movie/:id" element={<MovieDetails/>} />
+      <Route path="/series/:id" element={<SeriesDetails/>} />
     </Routes>
     </div>
   )
