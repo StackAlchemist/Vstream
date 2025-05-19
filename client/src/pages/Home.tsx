@@ -1,5 +1,5 @@
 import Hero from '../components/Hero.tsx'
-import MyList from '../components/MyList.tsx'
+// import MyList from '../components/MyList.tsx'
 import TrendingMovies from '../components/TrendingMovies.tsx'
 import TvShows from '../components/TvShows.tsx'
 const Home = () => {

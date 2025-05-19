@@ -7,6 +7,8 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [form, setForm] = useState({ email: "", password: "", name: "" });
   const navigate = useNavigate()
+  const authToken: string | null = localStorage.getItem('authToken')
+  // const navigate = useNavigate()
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -22,6 +24,7 @@ const Auth = () => {
         localStorage.setItem('name', response.data.user.name)
         localStorage.setItem('userId', response.data.user.id)
         toast.success(response.data.message)
+        
       }else{
         const response = await axios.post(import.meta.env.VITE_API_URL + '/admin/signup', { name: form.name, email: form.email, password: form.password });
         console.log('signup:',response.data);
@@ -31,18 +34,23 @@ const Auth = () => {
         toast.success(response.data.message)
       } 
       navigate('/')
-    } catch (err: any) {
+    }catch (err: any) {
       console.error(err);
-      if (err.response && err.response.status === 400) {
-        // Validation errors from backend
-        console.error('Validation errors:', err.response.data.errors || {});
+      if (err.response && err.response.data && err.response.data.error) {
+        // Show backend error message
+        toast.error(err.response.data.error || err.response | err.response.data);
       } else {
-        // Other (network/server) errors
-        console.error('Authentication error:', err);
+        // Fallback error message
         toast.error('Something went wrong. Please try again.');
       }
     };
   };
+
+  useEffect(() => {
+    if(authToken){
+      navigate(-1)
+    }
+  }, [authToken, navigate])
 
   return (
     <div className="h-screen w-full flex items-center justify-center text-white">

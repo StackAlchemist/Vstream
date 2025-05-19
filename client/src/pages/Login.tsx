@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const Login = () => {
@@ -9,6 +10,7 @@ const Login = () => {
   const [password, setPassword] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
+  const navigate = useNavigate()
 
   const toggleForm = () => {
     setIsLogin((prev) => !prev);
@@ -25,6 +27,7 @@ const Login = () => {
         localStorage.setItem('authToken', response.data.token)
         localStorage.setItem('name', response.data.user.name)
         localStorage.setItem('userId', response.data.user.id)
+        
         toast.success(response.data.message)
       }else{
         const response = await axios.post(import.meta.env.VITE_API_URL + '/auth/signup', { name, email, password });
@@ -33,7 +36,9 @@ const Login = () => {
         localStorage.setItem('name', response.data.user.name)
         localStorage.setItem('userId', response.data.user.id)
         toast.success(response.data.message)
-      } 
+      }
+      
+      navigate('/', { state: { justLoggedIn: true } })
     } catch (err: any) {
       console.error(err);
       if (err.response && err.response.status === 400) {

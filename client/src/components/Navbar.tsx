@@ -1,21 +1,44 @@
-import { Menu, X } from "lucide-react";
+import { LogIn, LogOut, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { asset } from "../assets/assets";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState<string | null>(localStorage.getItem('name'));
+  const [name, setName] = useState<string | null>('');
+  const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
-    const listener = () => {
-      setName(localStorage.getItem('name'));
-    };
-    window.addEventListener('storage', listener);
-    return () => {
-      window.removeEventListener('storage', listener);
-    };
+    const storedName = localStorage.getItem('name');
+    if (storedName) {
+      setName(storedName);
+    }
   }, []);
+  
+  useEffect(() => {
+    if (location.state?.justLoggedIn) {
+      const storedName = localStorage.getItem('name');
+      if (storedName) {
+        setName(storedName);
+      }
+    }
+  }, [location.state]);
+  
+
+  const logout = async ()=>{
+    try {
+      await axios.post(import.meta.env.VITE_API_URL + '/auth/logout')
+      localStorage.clear()
+      setName('')
+      toast.success('Logout Successful')
+    } catch (error) {
+      console.log(error)
+      toast.error('Logout failed')
+    }
+  }
 
   return (
     <nav className="bg-black text-white px-6 py-4 flex items-center justify-between ">
@@ -41,10 +64,36 @@ const Navbar = () => {
       {/* Profile */}{
         
       }
-      <div className="flex items-center gap-2">
-        <p>{name}</p>
-      <div className="hidden md:block w-8 h-8 bg-gray-500 rounded-full"></div>
+<div className="flex items-center gap-4">
+  {name ? (
+    <>
+      {/* Username and Avatar */}
+      <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-full">
+        <div className="w-8 h-8 flex items-center justify-center rounded-full bg-red-600 text-white font-bold uppercase">
+          {name.charAt(0)}
+        </div>
+        <p className="font-semibold text-sm text-white truncate max-w-[100px]">{name}</p>
       </div>
+
+      {/* Logout Button */}
+      <button
+        onClick={logout}
+        className="hover:bg-red-700 bg-red-600 text-white p-2 rounded-full transition"
+        title="Logout"
+      >
+        <LogOut size={20} />
+      </button>
+    </>
+  ) : (
+    <button
+      onClick={() => navigate('/login')}
+      className="flex items-center gap-2 bg-white text-black font-semibold px-5 py-3 rounded-md shadow-md hover:bg-gray-200 transition"
+    >
+      <LogIn /> <span>Login</span>
+    </button>
+  )}
+</div>
+
 
       {/* Mobile Menu Icon */}
       <div className="md:hidden">

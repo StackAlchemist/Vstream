@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { MonitorPlay, Film, Settings, Upload } from "lucide-react";
 import UploadSelectModal from "../components/UploadSelectModal";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const [name, setName] = useState<string | null>(localStorage.getItem('name'));
   const [isOpen, setIsOpen] = useState<boolean>(false)
+  const authToken: string | null = localStorage.getItem('authToken')
+  const navigate = useNavigate()
   
   useEffect(() => {
     const listener = () => {
@@ -17,6 +20,11 @@ const Home = () => {
   }, []);
 
 
+  useEffect(() => {
+    if(!authToken){
+      navigate('/sign')
+    }
+  }, [authToken, navigate])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-white p-8">

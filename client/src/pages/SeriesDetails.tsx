@@ -1,20 +1,30 @@
-import { useNavigate, useParams } from "react-router-dom"
+import { NavigateFunction, useNavigate, useParams } from "react-router-dom"
 import { Series } from "../types/Series"
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { FaPlay } from "react-icons/fa"
 import { toast } from "react-toastify"
 import { SyncLoader } from "react-spinners"
+import VideoPlayer from "../components/VideoPLayer"
 
 const SeriesDetails = () => {
   const { id } = useParams<{ id: string }>()
   const [serie, setSerie] = useState<Series | null>(null)
-  const navigate = useNavigate()
+  const navigate: NavigateFunction = useNavigate()
+  const authToken: string | null = localStorage.getItem('authToken')
+  const [popup, showPopup] = useState<boolean>(false)
+  const [selectedSeasonIndex, setSelectedSeasonIndex] = useState<number | null>(null)
+const [selectedEpisodeIndex, setSelectedEpisodeIndex] = useState<number | null>(null)
 
   const fetchSeries = async () => {
     try {
       const response = await axios.get(
-        import.meta.env.VITE_API_URL + `/series/get/${id}`
+        import.meta.env.VITE_API_URL + `/series/get/${id}`,
+        {
+          headers:{
+            'Authorization': `Bearer ${authToken}`
+          }
+        }
       )
       setSerie(response.data.series)
       console.log(response.data)
@@ -74,7 +84,10 @@ const SeriesDetails = () => {
                         <p className="text-sm text-gray-400 leading-snug">
                           {episode.description.slice(0, 100)}...
                         </p>
-                        <button className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 transition-colors duration-200 px-4 py-2 rounded-full w-fit text-sm mt-1">
+                        <button onClick={() => {
+                              setSelectedSeasonIndex(seasonIndex)
+                              setSelectedEpisodeIndex(episodeIndex)
+                          showPopup(!popup)}} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 transition-colors duration-200 px-4 py-2 rounded-full w-fit text-sm mt-1">
                           <FaPlay /> Play
                         </button>
                       </div>
@@ -86,6 +99,9 @@ const SeriesDetails = () => {
           </div>
         </div>
       </div>
+      {popup && <VideoPlayer onClose={() => showPopup(false)} movieId={""} seriesId={serie._id}
+    seasonIndex={selectedSeasonIndex}
+    episodeIndex={selectedEpisodeIndex}/>}
     </div>
   )
 }

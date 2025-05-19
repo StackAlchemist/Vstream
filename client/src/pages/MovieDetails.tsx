@@ -1,19 +1,28 @@
 import axios from "axios"
 import { useEffect, useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import { NavigateFunction, useNavigate, useParams } from "react-router-dom"
 import { Movies } from "../types/Movies"
 import { FaPlay } from "react-icons/fa"
 import { toast } from "react-toastify"
+import VideoPLayer from "../components/VideoPLayer"
+import { StopCircle } from "lucide-react"
 
 const MovieDetails = () => {
   const { id } = useParams<{ id: string }>()
   const [movie, setMovie] = useState<Movies | null>(null)
-  const navigate = useNavigate()
+  const navigate: NavigateFunction = useNavigate()
+  const authToken: string | null = localStorage.getItem('authToken')
+  const [popup, showPopup]  = useState<boolean>(false)
 
   const fetchMovie = async () => {
     try {
       const response = await axios.get(
-        import.meta.env.VITE_API_URL + `/movies/get/${id}`
+        import.meta.env.VITE_API_URL + `/movies/get/${id}` ,
+        {
+          headers:{
+            'Authorization': `Bearer ${authToken}`
+          }
+        }
       )
       setMovie(response.data)
       console.log(response.data)
@@ -21,6 +30,15 @@ const MovieDetails = () => {
       console.error("Failed to fetch movie:", error)
     }
   }
+
+  // const playVideo = async()=>{
+  //   try {
+  //      const response = axios.get(import.meta.env.VITE_API_URL + `/movies/getVideo/${id}`)
+  //   } catch (error) {
+  //     console.error('failed to load video:', error)
+  //     toast.error('failed to load video')
+  //   }
+  // }
 
 
   useEffect(() => {
@@ -60,11 +78,12 @@ const MovieDetails = () => {
             {movie.description}
           </p>
 
-          <button className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 transition-colors duration-200 px-6 py-2 rounded-full w-fit text-sm font-medium shadow-lg">
-            <FaPlay /> Play
+          <button onClick={()=>showPopup(!popup)} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 transition-colors duration-200 px-6 py-2 rounded-full w-fit text-sm font-medium shadow-lg">
+            {!popup ? <><FaPlay /> Play</> : <> <StopCircle /> Stop</>}
           </button>
         </div>
       </div>
+      {popup && <VideoPLayer onClose={() => showPopup(false)} movieId={movie._id} />}
     </div>
   )
 }

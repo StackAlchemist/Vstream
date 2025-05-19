@@ -2,6 +2,8 @@ import express,{Request, Response} from 'express'
 import { v2 as cloudinary } from "cloudinary";
 import Series from '../models/seriesModel';
 import Directors from '../models/adminModel';
+import fs from 'fs';
+import path from "path";
 
 export const postSeries = async (req: Request, res: Response)=>{
 
@@ -97,6 +99,17 @@ export const getSeries = async (req: Request, res: Response)=>{
     }
 }
 
+export const getSeriesByDir = async (req: Request, res: Response)=>{
+    try {
+        const director_id: string = req.params.id;
+        const series = await Series.find({director: director_id});
+        res.status(200).json({ series });
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ error: 'There was a problem fetching the series.' })
+    }
+}
+
 export const getSeriesById = async (req: Request, res: Response)=>{
     try {
 
@@ -121,6 +134,61 @@ export const deleteSeries = async(req: Request, res: Response)=>{
 
         const movie = await Series.findByIdAndDelete(sId)
         res.status(200).json({message: 'deleted successfully'})
+    } catch (error) {
+        console.error(error)
+        res.status(400).json({message: 'internal server error'})
+    }
+}
+
+export const getVideo = async (req: Request, res: Response)=>{
+    try {
+
+        
+        const { seriesId, seasonIndex, episodeIndex } = req.params;
+        const range : string | undefined = req.headers.range;
+        // const videoPath = series ? path.resolve(__dirname, "../../uploads", path.basename(series.seasons.episodes.video)) : "";
+        // console.log(videoPath)
+
+        if (!range) return res.status(400).send("Requires Range header");
+
+        const series = await Series.findById(seriesId)
+        if (!series) {
+            return res.status(404).send("Series not found");
+          }
+      
+          const season = series.seasons[parseInt(seasonIndex)];
+          if (!season) {
+            return res.status(404).send("Season not found");
+          }
+      
+          const episode = season.episodes[parseInt(episodeIndex)];
+          if (!episode) {
+            return res.status(404).send("Episode not found");
+          }
+
+          const videoPath = path.resolve(__dirname, "../../uploads", path.basename(episode.video));
+
+          if (!fs.existsSync(videoPath)) {
+            return res.status(404).send("Video file not found");
+          }
+
+          const videoSize = fs.statSync(videoPath).size;
+          const CHUNK_SIZE = 10 ** 6; // 1MB
+          const start = Number(range.replace(/\D/g, ""));
+          const end = Math.min(start + CHUNK_SIZE, videoSize - 1);
+        
+          const contentLength = end - start + 1;
+          const headers = {
+            "Content-Range": `bytes ${start}-${end}/${videoSize}`,
+            "Accept-Ranges": "bytes",
+            "Content-Length": contentLength,
+            "Content-Type": "video/mp4",
+          };
+        
+          res.writeHead(206, headers);
+          const videoStream = fs.createReadStream(videoPath, { start, end });
+          videoStream.pipe(res);
+        
     } catch (error) {
         console.error(error)
         res.status(400).json({message: 'internal server error'})

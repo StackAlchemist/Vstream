@@ -4,13 +4,20 @@ import { asset } from "../assets/assets";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Series } from "../types/Series";
+import VideoPlayer from "./VideoPLayer";
 
 const Hero = () => {
   const [series, setSeries] = useState<Series[]>([]);
+  const authToken: string | null = localStorage.getItem('authToken')
+  const [popup, showPopup] = useState<boolean>(false)
 
   const fetchSeries = async () => {
     try {
-      const response = await axios.get(import.meta.env.VITE_API_URL + "/series/get");
+      const response = await axios.get(import.meta.env.VITE_API_URL + "/series/get", {
+        headers: {
+          "Authorization": `Bearer ${authToken}`
+        }
+      });
       console.log(response.data.series);
       setSeries(response.data.series);
     } catch (error) {
@@ -42,7 +49,7 @@ const Hero = () => {
         </p>
 
         <div className="flex gap-4">
-          <button className="flex items-center gap-2 bg-white text-black font-semibold px-5 py-3 rounded-md shadow-md hover:bg-gray-200 transition">
+          <button onClick={()=>showPopup(!popup)} className="flex items-center gap-2 bg-white text-black font-semibold px-5 py-3 rounded-md shadow-md hover:bg-gray-200 transition">
             <FaPlay /> <span>Play</span>
           </button>
           <button className="flex items-center gap-2 bg-gray-700 text-white px-5 py-3 rounded-md shadow-md hover:bg-gray-600 transition">
@@ -50,6 +57,7 @@ const Hero = () => {
           </button>
         </div>
       </div>
+     {popup && <VideoPlayer onClose={()=>showPopup(false)} movieId="" seriesId={selectedSeries._id} seasonIndex={0} episodeIndex={0}/>}
     </div>
   );
 };

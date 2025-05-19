@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const genresList = [
   "Action", "Adventure", "Comedy", "Drama", "Fantasy",
@@ -23,6 +24,8 @@ const UploadMovies = () => {
   const [video, setVideo] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  const authToken: string | null = localStorage.getItem('authToken')
+  const navigate = useNavigate()
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -60,10 +63,15 @@ const UploadMovies = () => {
     try {
       const res = await axios.post(
         import.meta.env.VITE_API_URL + "/movies/post",
-        data
+        data, {
+          headers: {
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
       );
       toast.success("Movie uploaded!");
       console.log(res.data);
+      navigate('/view')
     } catch (err) {
       console.error(err);
       toast.error("Failed to upload movie");
@@ -85,6 +93,12 @@ const UploadMovies = () => {
       setVideo(file);
     }
   };
+
+  useEffect(() => {
+    if(!authToken){
+      navigate('/sign')
+    }
+  }, [authToken, navigate])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4 py-8">

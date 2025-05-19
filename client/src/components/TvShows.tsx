@@ -25,10 +25,15 @@ const TvShows = () => {
   const [loading, setLoading] = useState(true);
   const [series, setSeries] = useState<Series[]>([]);
   const navigate = useNavigate()
+  const authToken: string | null = localStorage.getItem('authToken')
 
   const fetchSeries = async () => {
     try {
-      const response = await axios.get(import.meta.env.VITE_API_URL + "/series/get")
+      const response = await axios.get(import.meta.env.VITE_API_URL + "/series/get", {
+        headers: {
+          "Authorization": `Bearer ${authToken}`
+        }
+      })
       setSeries(response.data.series)
     } catch (error) {
       console.log(error, "error fetching series")

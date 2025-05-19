@@ -1,5 +1,6 @@
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const UploadSeries = () => {
   const [isFirstUpload, setIsFirstUpload] = useState(true);
@@ -16,6 +17,8 @@ const UploadSeries = () => {
 
   const [coverImg, setCoverImg] = useState<File | null>(null);
   const [video, setVideo] = useState<File | null>(null);
+  const authToken: string | null = localStorage.getItem('authToken')
+  const navigate = useNavigate()
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -72,10 +75,15 @@ const UploadSeries = () => {
       data.append('seasons', JSON.stringify(seasons));
 
       try {
-        const res = await axios.post(import.meta.env.VITE_API_URL + '/series/post', data);
+        const res = await axios.post(import.meta.env.VITE_API_URL + '/series/post', data, {
+          headers: {
+            "Authorization": `Bearer ${authToken}`
+          }
+        });
         alert('Series uploaded!');
         setSeriesId(res.data.series._id);
         setIsFirstUpload(false);
+        navigate('/view')
       } catch (err) {
         console.error(err);
         alert('Failed to upload series');
@@ -94,6 +102,12 @@ const UploadSeries = () => {
       }
     }
   };
+
+  useEffect(() => {
+    if(!authToken){
+      navigate('/sign')
+    }
+  }, [authToken, navigate])
 
   return (
     <form

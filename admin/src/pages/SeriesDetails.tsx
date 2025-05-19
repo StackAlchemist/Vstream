@@ -8,12 +8,17 @@ import { toast } from "react-toastify"
 const SeriesDetails = () => {
   const { id } = useParams<{ id: string }>()
   const [serie, setSerie] = useState<Series | null>(null)
+  const authToken: string | null = localStorage.getItem('authToken')
   const navigate = useNavigate()
 
   const fetchMovie = async () => {
     try {
       const response = await axios.get(
-        import.meta.env.VITE_API_URL + `/series/get/${id}`
+        import.meta.env.VITE_API_URL + `/series/get/${id}`,{
+          headers:{
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
       )
       setSerie(response.data.series)
       console.log(response.data)
@@ -41,6 +46,12 @@ const SeriesDetails = () => {
   useEffect(() => {
     fetchMovie()
   }, [id])
+
+  useEffect(() => {
+    if(!authToken){
+      navigate('/sign')
+    }
+  }, [authToken, navigate])
 
   if (!serie)
     return <p className="text-center text-white mt-10">Loading...</p>

@@ -25,10 +25,15 @@ const TrendingMovies = () => {
   const [loading, setLoading] = useState(true);
   const [movies, setMovies] = useState<Movies[]>([]);
   const navigate = useNavigate()
+  const authToken: string | null = localStorage.getItem('authToken')
 
   const fetchMovies = async () => {
     try {
-      const response = await axios.get(import.meta.env.VITE_API_URL + "/movies/get")
+      const response = await axios.get(import.meta.env.VITE_API_URL + "/movies/get", {
+        headers: {
+          "Authorization": `Bearer ${authToken}`
+        }
+      })
       setMovies(response.data)
     } catch (error) {
       console.log(error, "error fetching movies")
