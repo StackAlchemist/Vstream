@@ -20,14 +20,25 @@ mongoose.connect(process.env.MONGODB_URI || '')
     .then(()=>console.log('connected to DB'))
     .catch((err)=>console.error(err));
 
-const corsOptions = {
-    origin:  "*",
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
-}
-
-app.use(cors(corsOptions))
+    
+    const allowedOrigins = [process.env.CLIENT1, process.env.CLIENT2];
+    const corsOptions = {
+      origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+        // allow requests with no origin (like Postman, curl)
+        if (!origin) return callback(null, true);
+        // Check if the origin is in the list of allowed origins
+        if (allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('CORS policy does not allow this origin'));
+        }
+      },
+      methods: ['GET', 'POST', 'PUT', 'DELETE'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      credentials: true
+    };
+    
+    app.use(cors(corsOptions));
 
 
 app.use('/api/movies', movieRouter)

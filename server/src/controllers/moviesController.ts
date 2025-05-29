@@ -67,11 +67,12 @@ export const getMovieById = async (req: Request, res: Response) => {
 
         // Populate the director's `name` field from the referenced Director model
         const movie = await Movies.findById(movieId).populate('director', 'name');
+        const director = await Directors.findById(movie?.director)
     
         if (!movie) {
           return res.status(404).json({ success: false, error: 'Movie not found' });
         }
-        res.status(200).json(movie);
+        res.status(200).json({movie, director: director?.name});
     } catch (error) {
         console.error('Error fetching movie', error);
         res.status(500).json({ error: 'Oops, We`re having trouble fetching the movie' });
@@ -134,3 +135,74 @@ export const getVideo = async(req: Request, res: Response)=>{
         res.status(400).json({ message: 'internal server error' })
     }
 }
+
+
+export const addComment = async (req: Request, res: Response)=>{
+    try {
+        const {movieId, userId, comment} = req.body;
+        const user = await User.findById(userId)
+        if(!user){
+            return res.status(404).json({error: "User not found"})
+        }
+
+        const movie = await Movies.findById(movieId)
+        if(!movie){
+            return res.status(404).json({error: "Movie not found"})
+        }
+
+        movie?.comments?.push({userId, text: comment, userName: user.name})
+        await movie.save()
+
+        res.status(200).json({msg: "Comment added successfully", movie})
+    } catch (error) {
+        console.error(error)
+        res.status(400).json({error: "There was a problem adding the comment"})
+    }
+}
+
+export const rating = async (req: Request, res: Response) => {
+  try {
+    const { rating, userId }: { rating: number; userId: string } = req.body;
+    const { id } = req.params;
+
+    if (
+      typeof rating !== "number" ||
+      rating < 1 ||
+      rating > 5 ||
+      typeof userId !== "string"
+    ) {
+      return res.status(400).json({ error: "Invalid rating or user ID" });
+    }
+
+    const movie = await Movies.findById(id);
+    if (!movie) {
+      return res.status(404).json({ error: "Movie not found" });
+    }
+
+    // Check if user has already rated
+    const existingRatingIndex = movie.rating.findIndex(r => r.userId === userId);
+
+    if (existingRatingIndex !== -1) {
+      // Update existing rating
+      movie.rating[existingRatingIndex].no = rating;
+    } else {
+      // Add new rating
+      movie.rating.push({ userId, no: rating });
+    }
+
+    await movie.save();
+
+    // Optionally calculate average rating
+    const avg =
+      movie.rating.reduce((acc, cur) => acc + cur.no, 0) / movie.rating.length;
+
+    res.status(200).json({
+      message: "Rating updated successfully",
+      averageRating: avg.toFixed(1),
+      totalRatings: movie.rating.length,
+    });
+  } catch (error) {
+    console.error("Rating error:", error);
+    res.status(500).json({ error: "There was an error adding the rating" });
+  }
+};

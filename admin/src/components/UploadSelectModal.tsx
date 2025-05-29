@@ -1,4 +1,4 @@
-import { FilmIcon, ClapperboardIcon, X } from 'lucide-react';
+import { FilmIcon, ClapperboardIcon, X, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const UploadSelectModal = ({isOpen, setIsOpen}:  {isOpen: boolean, setIsOpen: (isOpen: boolean)=>void}) => {
@@ -22,6 +22,11 @@ const UploadSelectModal = ({isOpen, setIsOpen}:  {isOpen: boolean, setIsOpen: (i
               <button onClick={()=>navigate('/upload-series')} className="flex items-center gap-3 bg-purple-600 hover:bg-purple-700 text-white py-3 px-5 rounded-xl shadow transition duration-200">
                 <ClapperboardIcon className="w-5 h-5" />
                 <span className="text-lg font-medium">Upload Series</span>
+              </button>
+
+              <button onClick={()=>navigate('/view')} className="flex items-center gap-3 bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-5 rounded-xl shadow transition duration-200">
+                <Eye className="w-5 h-5" />
+                <span className="text-lg font-medium">View Uploads</span>
               </button>
             </div>
     

@@ -1,46 +1,76 @@
-import { NavigateFunction, useNavigate, useParams } from "react-router-dom"
-import { Series } from "../types/Series"
-import { useEffect, useState } from "react"
-import axios from "axios"
-import { FaPlay } from "react-icons/fa"
-import { toast } from "react-toastify"
-import { SyncLoader } from "react-spinners"
-import VideoPlayer from "../components/VideoPLayer"
+import { useNavigate, useParams } from "react-router-dom";
+import { Series } from "../types/Series";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { FaPlay } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { SyncLoader } from "react-spinners";
+import VideoPlayer from "../components/VideoPLayer";
+import SeriesRating from "../components/SeriesRating";
 
 const SeriesDetails = () => {
-  const { id } = useParams<{ id: string }>()
-  const [serie, setSerie] = useState<Series | null>(null)
-  const navigate: NavigateFunction = useNavigate()
-  const authToken: string | null = localStorage.getItem('authToken')
-  const [popup, showPopup] = useState<boolean>(false)
-  const [selectedSeasonIndex, setSelectedSeasonIndex] = useState<number | null>(null)
-const [selectedEpisodeIndex, setSelectedEpisodeIndex] = useState<number | null>(null)
+  const { id } = useParams<{ id: string }>();
+  const [serie, setSerie] = useState<Series | null>(null);
+  const navigate = useNavigate();
+  const authToken = localStorage.getItem("authToken");
+  const userId = localStorage.getItem("userId");
+  const [popup, showPopup] = useState(false);
+  const [selectedSeasonIndex, setSelectedSeasonIndex] = useState<number | null>(null);
+  const [selectedEpisodeIndex, setSelectedEpisodeIndex] = useState<number | null>(null);
+  const [comment, setComment] = useState("");
+  const [director, setDirector] = useState("");
 
   const fetchSeries = async () => {
     try {
       const response = await axios.get(
         import.meta.env.VITE_API_URL + `/series/get/${id}`,
         {
-          headers:{
-            'Authorization': `Bearer ${authToken}`
-          }
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
         }
-      )
-      setSerie(response.data.series)
-      console.log(response.data)
+      );
+      setSerie(response.data.series);
+      setDirector(response.data.director);
     } catch (error) {
-      console.error("Failed to fetch series:", error)
+      console.error("Failed to fetch series:", error);
     }
-  }
+  };
+
+  const addComment = async () => {
+    try {
+      await axios.post(
+        import.meta.env.VITE_API_URL + `/series/add-comment`,
+        {
+          seriesId: serie?._id,
+          userId: userId,
+          comment: comment,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+      setComment("");
+      toast.success("Comment added successfully");
+    } catch (error) {
+      toast.error("Failed to add comment");
+      console.error("Failed to add comment:", error);
+    }
+  };
 
   useEffect(() => {
-    fetchSeries()
-  }, [id])
+    fetchSeries();
+  }, [id, comment]);
 
   if (!serie)
-    return <div className="text-center text-white mt-10 h-screen mx-auto justify-center items-center flex flex-col gap-2">
+    return (
+      <div className="text-center text-white mt-10 h-screen flex flex-col justify-center items-center">
         <SyncLoader color="#9810fa" />
-        Loading...</div>
+        Loading...
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white px-4 py-10">
@@ -54,56 +84,164 @@ const [selectedEpisodeIndex, setSelectedEpisodeIndex] = useState<number | null>(
         <div className="flex flex-col space-y-6">
           <div>
             <h1 className="text-4xl font-bold mb-3">{serie.title}</h1>
-            <p className="text-gray-300 leading-relaxed">
-              {serie.description}
-            </p>
+            <p className="text-gray-200 mb-3">Directed by: {director}</p>
+
+            {/* Genre Section */}
+            {serie.genre && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {Array.isArray(serie.genre) ? (
+                  serie.genre.map((genre) => (
+                    <span
+                      key={genre}
+                      className="text-sm text-white bg-purple-600 px-3 py-1 rounded-full"
+                    >
+                      {genre}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-sm text-white bg-purple-600 px-3 py-1 rounded-full">
+                    {serie.genre}
+                  </span>
+                )}
+              </div>
+            )}
+
+            <p className="text-gray-300 leading-relaxed">{serie.description}</p>
           </div>
 
-          <div className="space-y-10">
-            {serie.seasons.map((season, seasonIndex) => (
-              <div key={seasonIndex}>
-                <h2 className="text-2xl font-semibold mb-2">
+          {/* Season Picker */}
+          <div className="mb-10 max-w-md">
+            <label htmlFor="seasonSelect" className="block mb-2 text-lg font-semibold">
+              Select Season
+            </label>
+            <select
+              id="seasonSelect"
+              value={selectedSeasonIndex ?? ""}
+              onChange={(e) => {
+                const index = e.target.value === "" ? null : parseInt(e.target.value);
+                setSelectedSeasonIndex(index);
+                setSelectedEpisodeIndex(index !== null ? 0 : null); // auto-select first episode
+              }}
+              className="w-full p-3 rounded-md bg-gray-800 text-white border border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              <option value="">-- Choose Season --</option>
+              {serie.seasons.map((season, index) => (
+                <option key={index} value={index}>
                   {season.season_title}
-                </h2>
+                </option>
+              ))}
+            </select>
+          </div>
 
-                <div className="space-y-4">
-                  {season.episodes.map((episode, episodeIndex) => (
-                    <div
-                      key={episodeIndex}
-                      className="flex gap-5 items-start bg-white/5 hover:bg-white/10 transition-colors duration-200 rounded-2xl p-4"
-                    >
-                      <img
-                        src={serie.coverImg}
-                        alt={episode.episode_title}
-                        className="w-24 h-32 object-cover rounded-lg shadow-md"
-                      />
-                      <div className="flex flex-col space-y-2">
-                        <h3 className="text-lg font-semibold">
-                          {episode.episode_title}
-                        </h3>
-                        <p className="text-sm text-gray-400 leading-snug">
-                          {episode.description.slice(0, 100)}...
-                        </p>
-                        <button onClick={() => {
-                              setSelectedSeasonIndex(seasonIndex)
-                              setSelectedEpisodeIndex(episodeIndex)
-                          showPopup(!popup)}} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 transition-colors duration-200 px-4 py-2 rounded-full w-fit text-sm mt-1">
-                          <FaPlay /> Play
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+          {/* Episodes */}
+          {selectedSeasonIndex !== null && (
+            <div className="space-y-10">
+              <div className="mb-10">
+                {/* Episode Circles */}
+                <div className="flex flex-wrap gap-4 mb-6">
+                  {serie.seasons[selectedSeasonIndex].episodes.map((episode, episodeIndex) => {
+                    const isSelected = episodeIndex === selectedEpisodeIndex;
+                    return (
+                      <button
+                        key={episodeIndex}
+                        onClick={() => setSelectedEpisodeIndex(episodeIndex)}
+                        className={`w-12 h-12 flex items-center justify-center rounded-full border-2 text-sm font-semibold transition-all
+                        ${
+                          isSelected
+                            ? "bg-purple-600 border-purple-600 text-white"
+                            : "bg-gray-700 border-gray-500 text-gray-300 hover:bg-purple-600 hover:border-purple-600 hover:text-white"
+                        }`}
+                        title={episode.episode_title}
+                      >
+                        {episodeIndex + 1}
+                      </button>
+                    );
+                  })}
                 </div>
+
+                {/* Episode Info */}
+                {selectedEpisodeIndex !== null && (
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-6 flex gap-5 shadow-xl">
+                    <img
+                      src={serie.coverImg}
+                      alt={serie.seasons[selectedSeasonIndex].episodes[selectedEpisodeIndex].episode_title}
+                      className="w-28 h-36 object-cover rounded-md shadow"
+                    />
+                    <div className="flex flex-col space-y-3">
+                      <h3 className="text-xl font-semibold">
+                        {serie.seasons[selectedSeasonIndex].episodes[selectedEpisodeIndex].episode_title}
+                      </h3>
+                      <p className="text-gray-300">
+                        {serie.seasons[selectedSeasonIndex].episodes[selectedEpisodeIndex].description}
+                      </p>
+                      <button
+                        onClick={() => showPopup(true)}
+                        className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-full text-sm w-fit"
+                      >
+                        <FaPlay /> Play Episode
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          <SeriesRating movieId={serie._id} token={authToken} />
+        </div>
+      </div>
+
+      {/* Comments Input */}
+      <div className="max-w-4xl mx-auto mt-16">
+        <h2 className="text-2xl font-semibold mb-4">Leave a Comment</h2>
+        <div className="bg-gray-800 p-4 rounded-xl shadow-md flex flex-col gap-4">
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Write your comment..."
+            className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-purple-600"
+            rows={4}
+          ></textarea>
+          <button
+            onClick={addComment}
+            className="self-end bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-md font-semibold text-white"
+          >
+            Submit Comment
+          </button>
+        </div>
+      </div>
+
+      {/* Comment List */}
+      <div className="max-w-4xl mx-auto mt-10">
+        <h2 className="text-2xl font-semibold mb-6">Comments ({serie.comments.length})</h2>
+        {serie.comments.length === 0 ? (
+          <p className="text-gray-400">No comments yet. Be the first to comment!</p>
+        ) : (
+          <div className="space-y-6">
+            {serie.comments.map((comment, index) => (
+              <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-sm">
+                <div className="flex items-center justify-between">
+                  <p className="text-yellow-400 font-medium">{comment.userName}</p>
+                  <span className="text-xs text-gray-500">#{index + 1}</span>
+                </div>
+                <p className="text-gray-300 mt-2">{comment.text}</p>
               </div>
             ))}
           </div>
-        </div>
+        )}
       </div>
-      {popup && <VideoPlayer onClose={() => showPopup(false)} movieId={""} seriesId={serie._id}
-    seasonIndex={selectedSeasonIndex}
-    episodeIndex={selectedEpisodeIndex}/>}
-    </div>
-  )
-}
 
-export default SeriesDetails
+      {/* Popup Video Player */}
+      {popup && (
+        <VideoPlayer
+          onClose={() => showPopup(false)}
+          movieId={""}
+          seriesId={serie._id}
+          seasonIndex={selectedSeasonIndex}
+          episodeIndex={selectedEpisodeIndex}
+        />
+      )}
+    </div>
+  );
+};
+
+export default SeriesDetails;

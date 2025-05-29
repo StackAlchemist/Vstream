@@ -4,8 +4,8 @@ import TrendingMovies from '../components/TrendingMovies.tsx'
 import TvShows from '../components/TvShows.tsx'
 const Home = () => {
   return (
-    <div className='mt-5'>
-      <div className='justify-center items-center flex'>
+    <div className='mt-5 h-min-screen'>
+      <div className='justify-center items-center flex '>
         <Hero />
       </div>
       

@@ -4,6 +4,7 @@ import Series from '../models/seriesModel';
 import Directors from '../models/adminModel';
 import fs from 'fs';
 import path from "path";
+import User from '../models/userModel';
 
 export const postSeries = async (req: Request, res: Response)=>{
 
@@ -115,13 +116,13 @@ export const getSeriesById = async (req: Request, res: Response)=>{
 
         const { id } = req.params;
 
-        const series = await Series.findById(id);
+        const series = await Series.findById(id).populate('director', 'name');
+        const director = await Directors.findById(series?.director).select('name')
         if (!series) {
             return res.status(404).json({ error: 'Series not found.' });
         }
 
-        const director = await Directors.findById(series.director).select('name')
-        res.status(200).json( {series, director} );
+        res.status(200).json( {series, director: director?.name} );
     } catch (error) {
         console.error(error)
         res.status(500).json({ error: 'There was a problem fetching the series.' })
@@ -194,3 +195,74 @@ export const getVideo = async (req: Request, res: Response)=>{
         res.status(400).json({message: 'internal server error'})
     }
 }
+
+export const addComment = async (req: Request, res: Response)=>{
+    try {
+        const {seriesId, userId, comment} = req.body;
+        const user = await User.findById(userId)
+        if(!user){
+            return res.status(404).json({error: "User not found"})
+        }
+
+        const series = await Series.findById(seriesId)
+        if(!series){
+            return res.status(404).json({error: "Series not found"})
+        }
+
+        series.comments.push({userId, text: comment, userName: user.name})
+        await series.save()
+
+        res.status(200).json({msg: "Comment added successfully", series})
+    } catch (error) {
+        console.error(error)
+        res.status(400).json({error: "There was a problem adding the comment"})
+    }
+}
+
+
+export const rating = async (req: Request, res: Response) => {
+    try {
+      const { rating, userId }: { rating: number; userId: string } = req.body;
+      const { id } = req.params;
+  
+      if (
+        typeof rating !== "number" ||
+        rating < 1 ||
+        rating > 5 ||
+        typeof userId !== "string"
+      ) {
+        return res.status(400).json({ error: "Invalid rating or user ID" });
+      }
+  
+      const movie = await Series.findById(id);
+      if (!movie) {
+        return res.status(404).json({ error: "Movie not found" });
+      }
+  
+      // Check if user has already rated
+      const existingRatingIndex = movie.rating.findIndex(r => r.userId === userId);
+  
+      if (existingRatingIndex !== -1) {
+        // Update existing rating
+        movie.rating[existingRatingIndex].no = rating;
+      } else {
+        // Add new rating
+        movie.rating.push({ userId, no: rating });
+      }
+  
+      await movie.save();
+  
+      // Optionally calculate average rating
+      const avg =
+        movie.rating.reduce((acc, cur) => acc + cur.no, 0) / movie.rating.length;
+  
+      res.status(200).json({
+        message: "Rating updated successfully",
+        averageRating: avg.toFixed(1),
+        totalRatings: movie.rating.length,
+      });
+    } catch (error) {
+      console.error("Rating error:", error);
+      res.status(500).json({ error: "There was an error adding the rating" });
+    }
+  };

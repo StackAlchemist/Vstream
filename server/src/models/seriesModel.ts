@@ -41,7 +41,8 @@ const seriesSchema = new mongoose.Schema({
   comments: {
     type: [{
       userId: String,
-      text: String
+      text: String,
+      userName: String
     }],
     default: []
   },

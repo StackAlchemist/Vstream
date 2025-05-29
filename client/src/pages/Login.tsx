@@ -22,7 +22,9 @@ const Login = () => {
 
     try {
       if (isLogin){
-        const response = await axios.post(import.meta.env.VITE_API_URL + '/auth/login', { email, password });
+        const response = await axios.post(import.meta.env.VITE_API_URL + '/auth/login', { email, password }, 
+          {withCredentials: true}
+        );
         console.log('login:',response.data);
         localStorage.setItem('authToken', response.data.token)
         localStorage.setItem('name', response.data.user.name)
@@ -30,7 +32,9 @@ const Login = () => {
         
         toast.success(response.data.message)
       }else{
-        const response = await axios.post(import.meta.env.VITE_API_URL + '/auth/signup', { name, email, password });
+        const response = await axios.post(import.meta.env.VITE_API_URL + '/auth/signup', { name, email, password },
+          {withCredentials: true}
+        );
         console.log('signup:',response.data);
         localStorage.setItem('authToken', response.data.token)
         localStorage.setItem('name', response.data.user.name)

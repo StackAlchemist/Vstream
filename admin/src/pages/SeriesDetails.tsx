@@ -110,7 +110,7 @@ const SeriesDetails = () => {
       {/* Debug ID (optional) */}
       {/* <p className="text-xs text-gray-600 text-center mt-10">Series ID: {id}</p> */}
       <div className="flex justify-center gap-6 mt-12">
-        <button className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 px-8 rounded-full transition-all duration-200">
+        <button onClick={()=>navigate(`/edit/${id}`)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 px-8 rounded-full transition-all duration-200">
           Edit
         </button>
         <button

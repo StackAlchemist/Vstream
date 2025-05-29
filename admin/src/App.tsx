@@ -7,6 +7,7 @@ import UploadSeries from "./pages/UploadSeries"
 import View from "./pages/View"
 import MovieDetails from "./pages/movieDetails"
 import SeriesDetails from "./pages/SeriesDetails"
+import EditSeries from "./pages/EditSeries"
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
         <Route path='/view' element={<View />}/>
         <Route path="/view/:id" element={<MovieDetails />} />
         <Route path="/view-series/:id" element={<SeriesDetails />} />
+        <Route path="/edit/:id" element={<EditSeries />} />
       </Routes>
     </div>
   )

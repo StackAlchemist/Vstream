@@ -20,6 +20,7 @@ export interface Series {
     }[];
     comments: {
       userId: string;
+      userName: string;
       text: string;
     }[];
     director: string;
