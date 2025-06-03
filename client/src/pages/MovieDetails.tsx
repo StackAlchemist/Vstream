@@ -67,7 +67,6 @@ const MovieDetails = () => {
     }
   }
 
-
   useEffect(() => {
     fetchMovie()
   }, [id, comment])

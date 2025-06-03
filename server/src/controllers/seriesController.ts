@@ -1,12 +1,12 @@
-import express,{Request, Response} from 'express'
+import express, { Request, Response } from 'express';
 import { v2 as cloudinary } from "cloudinary";
 import Series from '../models/seriesModel';
 import Directors from '../models/adminModel';
 import fs from 'fs';
 import path from "path";
 import User from '../models/userModel';
-
-export const postSeries = async (req: Request, res: Response)=>{
+import multer from 'multer';
+export const postSeries = async (req: Request, res: Response) => {
 
     console.log(`i was hit with a ${req.method} request for series`)
 
@@ -14,7 +14,7 @@ export const postSeries = async (req: Request, res: Response)=>{
         
         const coverImgFile = (req.files as any).coverImg?.[0];
         const videoFile = (req.files as any).video?.[0];
-        const {title, genre, description, director, seasons} = req.body;
+        const { title, genre, description, director, seasons } = req.body;
 
         // Upload the file to Cloudinary and get the URL
         const result = await cloudinary.uploader.upload(coverImgFile.path);
@@ -37,7 +37,7 @@ export const postSeries = async (req: Request, res: Response)=>{
             seasons: parsedSeasons
         })
     
-        res.status(201).json({series, msg: 'movie uploaded successfully'})
+        res.status(201).json({ series, msg: 'movie uploaded successfully'})
 
     } catch (error) {
         console.error(error)
@@ -46,7 +46,7 @@ export const postSeries = async (req: Request, res: Response)=>{
 
 }
 
-export const editSeries = async (req: Request, res: Response)=>{
+export const editSeries = async (req: Request, res: Response) => {
     try {
         const videoFile = (req.files as any).video?.[0]
         const { ep_title, description, id, s_id, ep_id } = req.body;
@@ -90,7 +90,7 @@ export const editSeries = async (req: Request, res: Response)=>{
 
 }
 
-export const getSeries = async (req: Request, res: Response)=>{
+export const getSeries = async (req: Request, res: Response) => {
     try {
         const series = await Series.find();
         res.status(200).json({ series });
@@ -100,7 +100,7 @@ export const getSeries = async (req: Request, res: Response)=>{
     }
 }
 
-export const getSeriesByDir = async (req: Request, res: Response)=>{
+export const getSeriesByDir = async (req: Request, res: Response) => {
     try {
         const director_id: string = req.params.id;
         const series = await Series.find({director: director_id});
@@ -111,7 +111,7 @@ export const getSeriesByDir = async (req: Request, res: Response)=>{
     }
 }
 
-export const getSeriesById = async (req: Request, res: Response)=>{
+export const getSeriesById = async (req: Request, res: Response) => {
     try {
 
         const { id } = req.params;
@@ -129,7 +129,7 @@ export const getSeriesById = async (req: Request, res: Response)=>{
     }
 }
 
-export const deleteSeries = async(req: Request, res: Response)=>{
+export const deleteSeries = async(req: Request, res: Response) => {
     try {
         const sId: String = req.params.id;
 
@@ -141,7 +141,7 @@ export const deleteSeries = async(req: Request, res: Response)=>{
     }
 }
 
-export const getVideo = async (req: Request, res: Response)=>{
+export const getVideo = async (req: Request, res: Response) => {
     try {
 
         
@@ -196,7 +196,7 @@ export const getVideo = async (req: Request, res: Response)=>{
     }
 }
 
-export const addComment = async (req: Request, res: Response)=>{
+export const addComment = async (req: Request, res: Response) => {
     try {
         const {seriesId, userId, comment} = req.body;
         const user = await User.findById(userId)
@@ -254,7 +254,7 @@ export const rating = async (req: Request, res: Response) => {
   
       // Optionally calculate average rating
       const avg =
-        movie.rating.reduce((acc, cur) => acc + cur.no, 0) / movie.rating.length;
+        movie.rating.reduce((acc, cur) => acc + (cur.no ?? 0), 0) / movie.rating.length;
   
       res.status(200).json({
         message: "Rating updated successfully",
@@ -266,3 +266,76 @@ export const rating = async (req: Request, res: Response) => {
       res.status(500).json({ error: "There was an error adding the rating" });
     }
   };
+
+  export const getRated = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { userId } = req.query;
+      const movie = await Series.findById(id);
+      if (!movie) {
+        return res.status(404).json({ error: "Series not found" });
+      }
+  
+      const rating = movie.rating?.find(r => r.userId === userId);
+      if (!rating) {
+        return res.status(404).json({ error: "Rating not found" });
+      }
+  
+      res.status(200).json({ rating });
+      
+    } catch (error) {
+      console.error("Rating error:", error);
+      res.status(500).json({ error: "There was an error getting the rating" });
+    }
+  }
+
+
+// Add a new season to a series
+export const addSeason = async (req: Request, res: Response) => {
+  try {
+    const { title, description } = req.body;
+    const { seriesId } = req.params;
+
+    const series = await Series.findById(seriesId);
+    if (!series) return res.status(404).json({ error: "Series not found" });
+
+    series.seasons.push({ season_title: title , description, episodes: [] });
+    await series.save();
+
+    res.status(201).json({ msg: "New season added successfully", series });
+  } catch (error) {
+    console.error("Add Season Error:", error);
+    res.status(500).json({ error: "Failed to add season" });
+  }
+};
+
+// Add a new episode to a specific season of a series
+export const addEpisode = async (req: Request, res: Response) => {
+  try {
+    const { seriesId, seasonId } = req.params;
+    const { ep_title, description } = req.body;
+
+    const videoFile = (req.files as { video?: Express.Multer.File[] })?.video?.[0];
+    if (!videoFile) {
+      return res.status(400).json({ error: "Video file is required." });
+    }
+
+    const series = await Series.findById(seriesId);
+    if (!series) return res.status(404).json({ error: "Series not found" });
+
+    const season = series.seasons.id(seasonId);
+    if (!season) return res.status(404).json({ error: "Season not found" });
+
+    season.episodes.push({
+      episode_title: ep_title,
+      description,
+      video: `/uploads/${videoFile.filename}`,
+    });
+
+    await series.save();
+    res.status(201).json({ msg: "Episode added successfully", series });
+  } catch (error) {
+    console.error("Add Episode Error:", error);
+    res.status(500).json({ error: "Failed to add episode" });
+  }
+};

@@ -1,60 +1,115 @@
-import { useNavigate, useParams } from "react-router-dom"
-import { Series } from "../types/Series"
-import { useEffect, useState } from "react"
-import axios from "axios"
-import { FaPlay } from "react-icons/fa"
-import { toast } from "react-toastify"
+import { useNavigate, useParams } from "react-router-dom";
+import { Series } from "../types/Series";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { FaPlay } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 const SeriesDetails = () => {
-  const { id } = useParams<{ id: string }>()
-  const [serie, setSerie] = useState<Series | null>(null)
-  const authToken: string | null = localStorage.getItem('authToken')
-  const navigate = useNavigate()
+  const { id } = useParams<{ id: string }>();
+  const [serie, setSerie] = useState<Series | null>(null);
+  const [showSeasonModal, setShowSeasonModal] = useState(false);
+  const [showEpisodeModal, setShowEpisodeModal] = useState<string | null>(null);
+  const [seasonTitle, setSeasonTitle] = useState("");
+  const [episodeTitle, setEpisodeTitle] = useState("");
+  const [episodeDesc, setEpisodeDesc] = useState("");
+  const [selectedSeasonId, setSelectedSeasonId] = useState("");
+  const authToken: string | null = localStorage.getItem("authToken");
+  const navigate = useNavigate();
+  const [selectedVideoFile, setSelectedVideoFile] = useState<File | null>(null);
+
 
   const fetchMovie = async () => {
     try {
       const response = await axios.get(
-        import.meta.env.VITE_API_URL + `/series/get/${id}`,{
-          headers:{
-            "Authorization": `Bearer ${authToken}`
-          }
+        `${import.meta.env.VITE_API_URL}/series/get/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
         }
-      )
-      setSerie(response.data.series)
-      console.log(response.data)
+      );
+      setSerie(response.data.series);
     } catch (error) {
-      console.error("Failed to fetch movie:", error)
+      console.error("Failed to fetch movie:", error);
     }
-  }
+  };
 
   const deleteSeries = async () => {
     try {
       const response = await axios.delete(
-        import.meta.env.VITE_API_URL + `/series/delete/${id}`
-      )
+        `${import.meta.env.VITE_API_URL}/series/delete/${id}`
+      );
       if (response) {
-        toast.success("Deleted successfully")
-        navigate("/view")
+        toast.success("Deleted successfully");
+        navigate("/view");
       } else {
-        toast.error("Failed to delete")
+        toast.error("Failed to delete");
       }
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
+
+  const addSeason = async () => {
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/series/${id}/add-season`,
+        { season_title: seasonTitle },
+        { headers: { Authorization: `Bearer ${authToken}` } }
+      );
+      toast.success("Season added!");
+      setSeasonTitle("");
+      setShowSeasonModal(false);
+      fetchMovie();
+    } catch (err) {
+      toast.error("Failed to add season");
+    }
+  };
+
+  const addEpisode = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("ep_title", episodeTitle);
+      formData.append("description", episodeDesc);
+      if (selectedVideoFile) {
+        formData.append("video", selectedVideoFile);
+      }
+  
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/series/${id}/${selectedSeasonId}/add-episode`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+  
+      toast.success("Episode added!");
+      setEpisodeTitle("");
+      setEpisodeDesc("");
+      setSelectedVideoFile(null);
+      setShowEpisodeModal(null);
+      fetchMovie();
+    } catch (err) {
+      toast.error("Failed to add episode");
+    }
+  };
+  
 
   useEffect(() => {
-    fetchMovie()
-  }, [id])
+    fetchMovie();
+  }, [id]);
 
   useEffect(() => {
-    if(!authToken){
-      navigate('/sign')
+    if (!authToken) {
+      navigate("/sign");
     }
-  }, [authToken, navigate])
+  }, [authToken, navigate]);
 
-  if (!serie)
-    return <p className="text-center text-white mt-10">Loading...</p>
+  if (!serie) return <p className="text-center text-white mt-10">Loading...</p>;
 
   return (
     <div className="text-white min-h-screen py-10 px-4 bg-gradient-to-b from-gray-900 to-black">
@@ -71,11 +126,8 @@ const SeriesDetails = () => {
           <div className="space-y-6">
             {serie.seasons.map((season, seasonIndex) => (
               <div key={seasonIndex}>
-                <select className="w-full bg-white/10 text-white backdrop-blur-md rounded-md px-4 py-2">
-                  <option className="text-black" value="">
-                    {season.season_title}
-                  </option>
-                </select>
+<h3 className="text-xl font-bold mb-2">{season.season_title}</h3>
+
 
                 <div className="mt-4 space-y-4">
                   {season.episodes.map((episode, episodeIndex) => (
@@ -101,27 +153,122 @@ const SeriesDetails = () => {
                       </div>
                     </div>
                   ))}
+
+                  <div className="mt-4">
+                    <button
+                      onClick={() => {
+                        setShowEpisodeModal(season._id);
+                        setSelectedSeasonId(season._id);
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full transition-all duration-200"
+                    >
+                      + Add Episode
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
       </div>
-      {/* Debug ID (optional) */}
-      {/* <p className="text-xs text-gray-600 text-center mt-10">Series ID: {id}</p> */}
+
       <div className="flex justify-center gap-6 mt-12">
-        <button onClick={()=>navigate(`/edit/${id}`)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 px-8 rounded-full transition-all duration-200">
+        <button
+          onClick={() => setShowSeasonModal(true)}
+          className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-8 rounded-full transition-all duration-200"
+        >
+          + Add Season
+        </button>
+        <button
+          onClick={() => navigate(`/edit/${id}`)}
+          className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 px-8 rounded-full transition-all duration-200"
+        >
           Edit
         </button>
         <button
-        onClick={deleteSeries}
+          onClick={deleteSeries}
           className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-8 rounded-full transition-all duration-200"
         >
           Delete
         </button>
       </div>
-    </div>
-  )
-}
 
-export default SeriesDetails
+      {/* Season Modal */}
+      {showSeasonModal && (
+  <div className="fixed inset-0 bg-black/90 flex justify-center items-center z-50">
+    <div className="bg-gray-900 p-6 rounded-xl shadow-xl w-full max-w-md border border-gray-700">
+      <h3 className="text-xl font-bold mb-4 text-white">Add Season</h3>
+      <input
+        type="text"
+        placeholder="Season Title"
+        value={seasonTitle}
+        onChange={(e) => setSeasonTitle(e.target.value)}
+        className="w-full p-2 bg-gray-800 text-white border border-gray-700 rounded mb-4"
+      />
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => setShowSeasonModal(false)}
+          className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={addSeason}
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+        >
+          Add
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+{showEpisodeModal && (
+  <div className="fixed inset-0 bg-black/90 flex justify-center items-center z-50">
+    <div className="bg-gray-900 p-6 rounded-xl shadow-xl w-full max-w-md border border-gray-700">
+      <h3 className="text-xl font-bold mb-4 text-white">Add Episode</h3>
+      <input
+        type="text"
+        placeholder="Episode Title"
+        value={episodeTitle}
+        onChange={(e) => setEpisodeTitle(e.target.value)}
+        className="w-full p-2 bg-gray-800 text-white border border-gray-700 rounded mb-4"
+      />
+      <textarea
+        placeholder="Episode Description"
+        value={episodeDesc}
+        onChange={(e) => setEpisodeDesc(e.target.value)}
+        className="w-full p-2 bg-gray-800 text-white border border-gray-700 rounded mb-4"
+      />
+      <input
+  type="file"
+  accept="video/*"
+  onChange={(e) => {
+    if (e.target.files) setSelectedVideoFile(e.target.files[0]);
+  }}
+  className="w-full text-white mb-4"
+/>
+
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => setShowEpisodeModal(null)}
+          className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={addEpisode}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+        >
+          Add
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+    </div>
+  );
+};
+
+export default SeriesDetails;

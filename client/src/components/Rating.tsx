@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from 'axios';
+import { toast } from "react-toastify";
 
 interface RatingProps {
   onRate?: (value: number) => void;
@@ -10,6 +11,28 @@ interface RatingProps {
 
 const Rating = ({ onRate, initialValue = 0, movieId, token }: RatingProps) => {
   const [selected, setSelected] = useState<number>(initialValue);
+  // const [userRating, setRated] = useState<number>(0);
+
+  
+  const getRated = async () => {
+    try {
+      const response = await axios.get(
+        import.meta.env.VITE_API_URL + `/movies/rated/${movieId}`, 
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          params: {
+            userId: localStorage.getItem("userId")
+          }
+        }
+      )
+      setSelected(response.data.rating.no)
+    } catch (error) {
+      console.error("Failed to get rated:", error)
+      toast.error("Failed to get rated")
+    }
+  }
 
   const handleClick = async (value: number) => {
     setSelected(value);
@@ -23,10 +46,19 @@ const Rating = ({ onRate, initialValue = 0, movieId, token }: RatingProps) => {
           Authorization: `Bearer ${token}`
         }
       });
+      toast.success("Rated successfully")
+      getRated()
     } catch (error) {
       console.error("Failed to rate movie:", error);
+      toast.error("Failed to rate movie")
     }
   };
+
+  
+
+  useEffect(() => {
+    getRated()
+  }, [movieId])
 
   return (
     <div className="flex-col gap-6 mt-4 items-center">

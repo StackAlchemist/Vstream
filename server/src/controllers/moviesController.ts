@@ -206,3 +206,25 @@ export const rating = async (req: Request, res: Response) => {
     res.status(500).json({ error: "There was an error adding the rating" });
   }
 };
+
+export const getRated = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.query;
+    const movie = await Movies.findById(id);
+    if (!movie) {
+      return res.status(404).json({ error: "Movie not found" });
+    }
+
+    const rating = movie.rating?.find(r => r.userId === userId);
+    if (!rating) {
+      return res.status(404).json({ error: "Rating not found" });
+    }
+
+    res.status(200).json({ rating });
+    
+  } catch (error) {
+    console.error("Rating error:", error);
+    res.status(500).json({ error: "There was an error getting the rating" });
+  }
+}

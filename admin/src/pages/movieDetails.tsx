@@ -13,6 +13,7 @@ const MovieDetails = () => {
   const authToken: string | null = localStorage.getItem('authToken')
   const userId: string | null = localStorage.getItem('userId')
   const navigate = useNavigate()
+  const [movieDirector, setMovieDirector] = useState<string | null>(null)
 
   const fetchMovie = async () => {
     setIsLoading(true)
@@ -25,8 +26,8 @@ const MovieDetails = () => {
           }
         }
       )
-      setMovie(response.data)
-      console.log(response.data)
+      setMovie(response.data.movie)
+      setMovieDirector(response.data.director)
     } catch (error) {
       console.error("Failed to fetch movie:", error)
     } finally {
@@ -91,11 +92,11 @@ const MovieDetails = () => {
           <div>
             <h1 className="text-4xl font-bold mb-2">{movie?.title}</h1>
             <p className="text-sm text-gray-400 mb-3">
-              Directed by: <span className="text-white">{movie?.director}</span>
+              Directed by: <span className="text-white">{movieDirector}</span>
             </p>
 
             <div className="flex flex-wrap gap-2 mb-4">
-              {movie?.genre.map((g, index) => (
+              {movie?.genre?.map((g: string, index: number) => (
                 <span
                   key={index}
                   className="bg-purple-600/80 text-white text-xs px-3 py-1 rounded-full"
