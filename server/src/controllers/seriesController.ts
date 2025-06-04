@@ -290,7 +290,7 @@ export const rating = async (req: Request, res: Response) => {
   }
 
 
-// Add a new season to a series
+// Adding new season to a series
 export const addSeason = async (req: Request, res: Response) => {
   try {
     const { title, description } = req.body;
@@ -309,7 +309,7 @@ export const addSeason = async (req: Request, res: Response) => {
   }
 };
 
-// Add a new episode to a specific season of a series
+// Add ing new episode to a specific season of a series
 export const addEpisode = async (req: Request, res: Response) => {
   try {
     const { seriesId, seasonId } = req.params;

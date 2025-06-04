@@ -9,6 +9,7 @@ import MovieDetails from "./pages/movieDetails"
 import SeriesDetails from "./pages/SeriesDetails"
 import EditSeries from "./pages/EditSeries"
 import AddSeason from "./pages/AddSeason"
+import Viewership from "./pages/Viewership"
 
 const App = () => {
   return (
@@ -25,6 +26,7 @@ const App = () => {
         <Route path="/view-series/:id" element={<SeriesDetails />} />
         <Route path="/edit/:id" element={<EditSeries />} />
         <Route path="/add-season/:id" element={<AddSeason />} />
+        <Route path="/viewership" element={<Viewership />} />
       </Routes>
     </div>
   )
