@@ -42,7 +42,13 @@ const seriesSchema = new mongoose.Schema({
     type: [{
       userId: String,
       text: String,
-      userName: String
+      userName: String,
+      replies: [{
+        userId: String,
+        text: String,
+        userName: String,
+        replyTo: String
+      }]
     }],
     default: []
   },

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { FaPlay } from "react-icons/fa";
 import { toast } from "react-toastify";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 const SeriesDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -132,9 +133,9 @@ const SeriesDetails = () => {
                     onClick={() =>
                       setOpenSeasonIndex(isOpen ? null : seasonIndex)
                     }
-                    className="w-full text-left px-4 py-3 bg-white/10 hover:bg-white/20 font-semibold text-lg transition-all duration-200"
+                    className="w-full text-left px-4 py-3 bg-white/10 hover:bg-white/20 font-semibold text-lg transition-all duration-200 flex items-center justify-between"
                   >
-                    Season {seasonIndex + 1} {isOpen ? "▲" : "▼"}
+                    Season {seasonIndex + 1} {isOpen ? <ChevronUp /> : <ChevronDown />}
                   </button>
 
                   {isOpen && (

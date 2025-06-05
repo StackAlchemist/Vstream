@@ -228,3 +228,43 @@ export const getRated = async (req: Request, res: Response) => {
     res.status(500).json({ error: "There was an error getting the rating" });
   }
 }
+
+export const replyComment = async (req: Request, res: Response) => {
+  try {
+      const { movieId, userId, comment, replyTo } = req.body;
+      const user = await User.findById(userId)
+
+      // check if user exists
+      if(!user){
+          return res.status(404).json({error: "User not found"})
+      }
+
+      // check if user to reply exists
+      const userToReply = await User.findById(replyTo)
+      if(!userToReply){
+          return res.status(404).json({error: "User not found"})
+      }
+
+      // check if movie exists
+      const movie = await Movies.findById(movieId)
+      if(!movie){
+          return res.status(404).json({error: "Movie not found"})
+      }
+
+      // check if comment to reply exists
+      const commentToReply = movie?.comments?.find(c => c.userId === replyTo)
+      if(!commentToReply){
+          return res.status(404).json({error: "Comment not found"})
+      }
+
+      // add reply to comment
+      commentToReply.replies.push({userId, text: comment, userName: user.name, replyTo: userToReply.name})
+        await movie.save()
+
+      res.status(200).json({msg: "Reply added successfully", movie})
+
+  } catch (error) {
+      console.error(error)
+      res.status(400).json({error: "There was a problem adding the reply"})
+  }
+}

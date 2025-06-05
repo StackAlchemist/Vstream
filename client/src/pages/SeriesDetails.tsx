@@ -19,7 +19,8 @@ const SeriesDetails = () => {
   const [selectedEpisodeIndex, setSelectedEpisodeIndex] = useState<number | null>(null);
   const [comment, setComment] = useState("");
   const [director, setDirector] = useState("");
-
+  const [replyTo, setReplyTo] = useState("");
+  const [replyToComment, setReplyToComment] = useState("");
   const fetchSeries = async () => {
     try {
       const response = await axios.get(
@@ -59,6 +60,30 @@ const SeriesDetails = () => {
       console.error("Failed to add comment:", error);
     }
   };
+
+  const replyComment = async () => {
+    try {
+      await axios.post(
+        import.meta.env.VITE_API_URL + `/series/reply-comment`,
+        {
+          seriesId: serie?._id,
+          userId: userId,
+          comment: replyToComment, 
+          replyTo: replyTo
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+      setComment("");
+      toast.success("Reply added successfully");
+    } catch (error) {
+      toast.error("Failed to add reply");
+      console.error("Failed to add reply:", error);
+    }
+  }
 
   useEffect(() => {
     fetchSeries();
@@ -127,7 +152,7 @@ const SeriesDetails = () => {
               <option value="">-- Choose Season --</option>
               {serie.seasons.map((season, index) => (
                 <option key={index} value={index}>
-                  {season.season_title}
+                  {season.season_title || `Season ${index + 1}`}
                 </option>
               ))}
             </select>
@@ -216,16 +241,56 @@ const SeriesDetails = () => {
         {serie.comments.length === 0 ? (
           <p className="text-gray-400">No comments yet. Be the first to comment!</p>
         ) : (
-          <div className="space-y-6">
-            {serie.comments.map((comment, index) => (
-              <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-sm">
-                <div className="flex items-center justify-between">
-                  <p className="text-yellow-400 font-medium">{comment.userName}</p>
-                  <span className="text-xs text-gray-500">#{index + 1}</span>
-                </div>
-                <p className="text-gray-300 mt-2">{comment.text}</p>
+          <div className="space-y-6">{serie.comments.map((comment, index) => (
+            <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-sm">
+              <div className="flex items-center justify-between">
+                <p className="text-yellow-400 font-medium">{comment.userName}</p>
+                <span className="text-xs text-gray-500">#{index + 1}</span>
               </div>
-            ))}
+              <p className="text-gray-300 mt-2">{comment.text}</p>
+              
+              <button
+                className="text-purple-600 hover:text-purple-700"
+                onClick={() => setReplyTo(comment.userId)}
+              >
+                Reply
+              </button>
+          
+              {replyTo === comment.userId && (
+                <div className="mt-2">
+                  <textarea
+                    value={replyToComment}
+                    onChange={(e) => setReplyToComment(e.target.value)}
+                    placeholder="Write your reply..."
+                    className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-purple-600"
+                    rows={2}
+                  ></textarea>
+                  <button
+                    onClick={replyComment}
+                    className="mt-2 bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-md font-semibold text-white"
+                  >
+                    Submit Reply
+                  </button>
+                </div>
+              )}
+          
+              {/* Replies Display */}
+              {comment.replies && comment.replies.length > 0 && (
+                <div className="mt-4 pl-6 border-l border-gray-700 space-y-3">
+                  {comment.replies.map((reply, rIndex) => (
+                    <div
+                      key={rIndex}
+                      className="bg-gray-700 p-3 rounded-lg"
+                    >
+                      <p className="text-purple-400 font-medium">{reply.userName}</p>
+                      <p className="text-gray-200">{reply.text}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+          
           </div>
         )}
       </div>

@@ -22,6 +22,12 @@ export interface Series {
       userId: string;
       userName: string;
       text: string;
+      replies: [{
+        userId: string,
+        text: string,
+        userName: string,
+        replyTo: string
+      }]
     }[];
     director: string;
     createdAt: string;

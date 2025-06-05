@@ -220,6 +220,47 @@ export const addComment = async (req: Request, res: Response) => {
 }
 
 
+export const replyComment = async (req: Request, res: Response) => {
+    try {
+        const { seriesId, userId, comment, replyTo } = req.body;
+        const user = await User.findById(userId)
+
+        // check if user exists
+        if(!user){
+            return res.status(404).json({error: "User not found"})
+        }
+
+        // check if user to reply exists
+        const userToReply = await User.findById(replyTo)
+        if(!userToReply){
+            return res.status(404).json({error: "User not found"})
+        }
+
+        // check if series exists
+        const series = await Series.findById(seriesId)
+        if(!series){
+            return res.status(404).json({error: "Series not found"})
+        }
+
+        // check if comment to reply exists
+        const commentToReply = series.comments.find(c => c.userId === replyTo)
+        if(!commentToReply){
+            return res.status(404).json({error: "Comment not found"})
+        }
+
+        // add reply to comment
+        commentToReply.replies.push({userId, text: comment, userName: user.name, replyTo: userToReply.name})
+        await series.save()
+
+        res.status(200).json({msg: "Reply added successfully", series})
+
+    } catch (error) {
+        console.error(error)
+        res.status(400).json({error: "There was a problem adding the reply"})
+    }
+}
+
+
 export const rating = async (req: Request, res: Response) => {
     try {
       const { rating, userId }: { rating: number; userId: string } = req.body;

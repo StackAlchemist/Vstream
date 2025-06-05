@@ -1,5 +1,5 @@
 import express from "express";
-import { addComment, addSeason, addEpisode, deleteSeries, editSeries, getRated, getSeries, getSeriesByDir, getSeriesById, getVideo, postSeries, rating } from "../controllers/seriesController";
+import { addComment, addSeason, addEpisode, deleteSeries, editSeries, getRated, getSeries, getSeriesByDir, getSeriesById, getVideo, postSeries, rating, replyComment } from "../controllers/seriesController";
 import upload from "../middlewares/multer";
 import { requireAuth } from "../middlewares/authMiddleware";
 
@@ -15,6 +15,7 @@ seriesRouter.put('/edit', requireAuth, upload.fields([
 ]), editSeries);
 
 seriesRouter.post('/add-comment', requireAuth, addComment)
+seriesRouter.post('/reply-comment', requireAuth, replyComment)
 
 seriesRouter.get('/get', requireAuth, getSeries)
 seriesRouter.get('/get/:id', requireAuth, getSeriesById)

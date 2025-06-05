@@ -11,7 +11,14 @@ export interface Movies {
     },
     comments: {
         userId: string,
-        text: string
+        text: string,
+        userName: string,
+        replies: [{
+            userId: string,
+            text: string,
+            userName: string,
+            replyTo: string
+        }]
     },
     director: string
 }
