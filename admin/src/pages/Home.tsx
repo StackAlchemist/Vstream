@@ -42,7 +42,7 @@ const Home = () => {
           <p className="text-gray-400 text-sm">Add, update or remove titles from your collection.</p>
         </div>
 
-        <div className="bg-gray-800 hover:bg-gray-700 transition rounded-2xl p-6 shadow-lg">
+        <div onClick={() => navigate('/viewership')} className="bg-gray-800 hover:bg-gray-700 transition rounded-2xl p-6 shadow-lg">
           <Film className="h-12 w-12 text-pink-400 mb-4" />
           <h2 className="text-xl font-semibold mb-1">Track Viewership</h2>
           <p className="text-gray-400 text-sm">Monitor which movies are trending and performing well.</p>

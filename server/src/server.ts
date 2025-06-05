@@ -8,6 +8,7 @@ import userRouter from './routes/userRoutes';
 import cors from 'cors'
 import adminRouter from './routes/adminRoutes';
 import seriesRouter from './routes/seriesRoutes';
+import viewershipRouter from './routes/viewershipRoutes';
 
 dotenv.config();
 
@@ -45,6 +46,7 @@ app.use('/api/movies', movieRouter)
 app.use('/api/auth/', userRouter)
 app.use('/api/admin/', adminRouter)
 app.use('/api/series', seriesRouter)
+app.use('/api/viewership', viewershipRouter)
 app.get('/video', (req, res)=>{
     const range: string | undefined = req.headers.range;
     if(!range) res.status(400).send("Requires range header")

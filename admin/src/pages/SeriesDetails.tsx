@@ -14,10 +14,10 @@ const SeriesDetails = () => {
   const [episodeTitle, setEpisodeTitle] = useState("");
   const [episodeDesc, setEpisodeDesc] = useState("");
   const [selectedSeasonId, setSelectedSeasonId] = useState("");
+  const [selectedVideoFile, setSelectedVideoFile] = useState<File | null>(null);
+  const [openSeasonIndex, setOpenSeasonIndex] = useState<number | null>(null);
   const authToken: string | null = localStorage.getItem("authToken");
   const navigate = useNavigate();
-  const [selectedVideoFile, setSelectedVideoFile] = useState<File | null>(null);
-
 
   const fetchMovie = async () => {
     try {
@@ -75,7 +75,7 @@ const SeriesDetails = () => {
       if (selectedVideoFile) {
         formData.append("video", selectedVideoFile);
       }
-  
+
       await axios.post(
         `${import.meta.env.VITE_API_URL}/series/${id}/${selectedSeasonId}/add-episode`,
         formData,
@@ -86,7 +86,7 @@ const SeriesDetails = () => {
           },
         }
       );
-  
+
       toast.success("Episode added!");
       setEpisodeTitle("");
       setEpisodeDesc("");
@@ -97,7 +97,6 @@ const SeriesDetails = () => {
       toast.error("Failed to add episode");
     }
   };
-  
 
   useEffect(() => {
     fetchMovie();
@@ -124,50 +123,61 @@ const SeriesDetails = () => {
           <p className="text-gray-300 leading-relaxed">{serie.description}</p>
 
           <div className="space-y-6">
-            {serie.seasons.map((season, seasonIndex) => (
-              <div key={seasonIndex}>
-<h3 className="text-xl font-bold mb-2">{season.season_title}</h3>
+            {serie.seasons.map((season, seasonIndex) => {
+              const isOpen = openSeasonIndex === seasonIndex;
 
+              return (
+                <div key={seasonIndex} className="border border-gray-700 rounded-xl overflow-hidden">
+                  <button
+                    onClick={() =>
+                      setOpenSeasonIndex(isOpen ? null : seasonIndex)
+                    }
+                    className="w-full text-left px-4 py-3 bg-white/10 hover:bg-white/20 font-semibold text-lg transition-all duration-200"
+                  >
+                    Season {seasonIndex + 1} {isOpen ? "▲" : "▼"}
+                  </button>
 
-                <div className="mt-4 space-y-4">
-                  {season.episodes.map((episode, episodeIndex) => (
-                    <div
-                      key={episodeIndex}
-                      className="flex gap-4 items-start bg-white/5 hover:bg-white/10 transition-colors duration-200 rounded-xl p-4"
-                    >
-                      <img
-                        src={serie.coverImg}
-                        alt="episode"
-                        className="w-24 h-auto rounded-lg object-cover"
-                      />
-                      <div className="flex flex-col space-y-2">
-                        <h3 className="text-lg font-semibold">
-                          {episode.episode_title}
-                        </h3>
-                        <p className="text-sm text-gray-400">
-                          {episode.description.slice(0, 100)}...
-                        </p>
-                        <button className="inline-flex items-center gap-2 self-start mt-2 text-sm bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-full transition-colors duration-200">
-                          <FaPlay /> Play
+                  {isOpen && (
+                    <div className="p-4 space-y-4 bg-white/5">
+                      {season.episodes.map((episode, episodeIndex) => (
+                        <div
+                          key={episodeIndex}
+                          className="flex gap-4 items-start bg-white/5 hover:bg-white/10 transition-colors duration-200 rounded-xl p-4"
+                        >
+                          <img
+                            src={serie.coverImg}
+                            alt="episode"
+                            className="w-24 h-auto rounded-lg object-cover"
+                          />
+                          <div className="flex flex-col space-y-2">
+                            <h3 className="text-lg font-semibold">
+                              {episode.episode_title}
+                            </h3>
+                            <p className="text-sm text-gray-400">
+                              {episode.description.slice(0, 100)}...
+                            </p>
+                            {/* <button className="inline-flex items-center gap-2 self-start mt-2 text-sm bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-full transition-colors duration-200">
+                              <FaPlay /> Play
+                            </button> */}
+                          </div>
+                        </div>
+                      ))}
+                      <div className="mt-4">
+                        <button
+                          onClick={() => {
+                            setShowEpisodeModal(season._id);
+                            setSelectedSeasonId(season._id);
+                          }}
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full transition-all duration-200"
+                        >
+                          + Add Episode
                         </button>
                       </div>
                     </div>
-                  ))}
-
-                  <div className="mt-4">
-                    <button
-                      onClick={() => {
-                        setShowEpisodeModal(season._id);
-                        setSelectedSeasonId(season._id);
-                      }}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full transition-all duration-200"
-                    >
-                      + Add Episode
-                    </button>
-                  </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -195,78 +205,78 @@ const SeriesDetails = () => {
 
       {/* Season Modal */}
       {showSeasonModal && (
-  <div className="fixed inset-0 bg-black/90 flex justify-center items-center z-50">
-    <div className="bg-gray-900 p-6 rounded-xl shadow-xl w-full max-w-md border border-gray-700">
-      <h3 className="text-xl font-bold mb-4 text-white">Add Season</h3>
-      <input
-        type="text"
-        placeholder="Season Title"
-        value={seasonTitle}
-        onChange={(e) => setSeasonTitle(e.target.value)}
-        className="w-full p-2 bg-gray-800 text-white border border-gray-700 rounded mb-4"
-      />
-      <div className="flex justify-end gap-2">
-        <button
-          onClick={() => setShowSeasonModal(false)}
-          className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={addSeason}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-        >
-          Add
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+        <div className="fixed inset-0 bg-black/90 flex justify-center items-center z-50">
+          <div className="bg-gray-900 p-6 rounded-xl shadow-xl w-full max-w-md border border-gray-700">
+            <h3 className="text-xl font-bold mb-4 text-white">Add Season</h3>
+            <input
+              type="text"
+              placeholder="Season Title"
+              value={seasonTitle}
+              onChange={(e) => setSeasonTitle(e.target.value)}
+              className="w-full p-2 bg-gray-800 text-white border border-gray-700 rounded mb-4"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowSeasonModal(false)}
+                className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={addSeason}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-{showEpisodeModal && (
-  <div className="fixed inset-0 bg-black/90 flex justify-center items-center z-50">
-    <div className="bg-gray-900 p-6 rounded-xl shadow-xl w-full max-w-md border border-gray-700">
-      <h3 className="text-xl font-bold mb-4 text-white">Add Episode</h3>
-      <input
-        type="text"
-        placeholder="Episode Title"
-        value={episodeTitle}
-        onChange={(e) => setEpisodeTitle(e.target.value)}
-        className="w-full p-2 bg-gray-800 text-white border border-gray-700 rounded mb-4"
-      />
-      <textarea
-        placeholder="Episode Description"
-        value={episodeDesc}
-        onChange={(e) => setEpisodeDesc(e.target.value)}
-        className="w-full p-2 bg-gray-800 text-white border border-gray-700 rounded mb-4"
-      />
-      <input
-  type="file"
-  accept="video/*"
-  onChange={(e) => {
-    if (e.target.files) setSelectedVideoFile(e.target.files[0]);
-  }}
-  className="w-full text-white mb-4"
-/>
+      {/* Episode Modal */}
+      {showEpisodeModal && (
+        <div className="fixed inset-0 bg-black/90 flex justify-center items-center z-50">
+          <div className="bg-gray-900 p-6 rounded-xl shadow-xl w-full max-w-md border border-gray-700">
+            <h3 className="text-xl font-bold mb-4 text-white">Add Episode</h3>
+            <input
+              type="text"
+              placeholder="Episode Title"
+              value={episodeTitle}
+              onChange={(e) => setEpisodeTitle(e.target.value)}
+              className="w-full p-2 bg-gray-800 text-white border border-gray-700 rounded mb-4"
+            />
+            <textarea
+              placeholder="Episode Description"
+              value={episodeDesc}
+              onChange={(e) => setEpisodeDesc(e.target.value)}
+              className="w-full p-2 bg-gray-800 text-white border border-gray-700 rounded mb-4"
+            />
+            <input
+              type="file"
+              accept="video/*"
+              onChange={(e) => {
+                if (e.target.files) setSelectedVideoFile(e.target.files[0]);
+              }}
+              className="w-full text-white mb-4"
+            />
 
-      <div className="flex justify-end gap-2">
-        <button
-          onClick={() => setShowEpisodeModal(null)}
-          className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={addEpisode}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-        >
-          Add
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowEpisodeModal(null)}
+                className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={addEpisode}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
