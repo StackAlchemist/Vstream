@@ -242,7 +242,7 @@ export const replyComment = async (req: Request, res: Response) => {
       // check if user to reply exists
       const userToReply = await User.findById(replyTo)
       if(!userToReply){
-          return res.status(404).json({error: "User not found"})
+          return res.status(404).json({error: "User to reply not found"})
       }
 
       // check if movie exists
