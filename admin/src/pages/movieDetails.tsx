@@ -117,10 +117,55 @@ const MovieDetails = () => {
         </div>
       </div>
 
+
+
+
+            {/* Comment List */}
+            <div className="max-w-4xl mx-auto mt-10">
+        <h2 className="text-2xl font-semibold mb-6">Comments 
+          {/* ({movie?.comments?.reduce((total, comment) => total + comment.replies.length, 0) || 0}) */}
+          </h2>
+        {movie.comments.length === 0 ? (
+          <p className="text-gray-400">No comments yet. Be the first to comment!</p>
+        ) : (
+          <div className="space-y-6">{movie.comments.map((comment, index) => (
+            <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-sm">
+              <div className="flex items-center justify-between">
+                <p className="text-yellow-400 font-medium">{comment.userName}</p>
+                <span className="text-xs text-gray-500">#{index + 1}</span>
+              </div>
+              <p className="text-gray-300 mt-2">{comment.text}</p>
+              
+              
+          
+              {/* Replies Display */}
+              {comment.replies && comment.replies.length > 0 && (
+                <div className="mt-4 pl-6 border-l border-gray-700 space-y-3">
+                  {comment.replies.map((reply, rIndex) => (
+                    <div
+                      key={rIndex}
+                      className="bg-gray-700 p-3 rounded-lg"
+                    >
+                      <p className="text-purple-400 font-medium">{reply.userName}</p>
+                      <p className="text-gray-200">{reply.text}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+          
+          </div>
+        )}
+      </div>
+
+
+      
+
       <div className="flex justify-center gap-6 mt-12">
-        <button className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 px-8 rounded-full transition-all duration-200">
+        {/* <button className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 px-8 rounded-full transition-all duration-200">
           Edit
-        </button>
+        </button> */}
         <button
           onClick={deleteMovie}
           className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-8 rounded-full transition-all duration-200"
@@ -128,6 +173,8 @@ const MovieDetails = () => {
           Delete
         </button>
       </div>
+
+      
     </div>
   )
 }

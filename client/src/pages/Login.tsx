@@ -41,6 +41,8 @@ const Login = () => {
         localStorage.setItem('userId', response.data.user.id)
         toast.success(response.data.message)
       }
+
+      
       
       navigate('/', { state: { justLoggedIn: true } })
     } catch (err: any) {

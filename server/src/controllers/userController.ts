@@ -6,7 +6,8 @@ import dotenv from 'dotenv'
 
 dotenv.config();
 
-const maxAge = 1*24*24*60
+const maxAge = 24 * 60 * 60; // 24 hours
+
 
 const createToken = (id: string)=>{
     return jwt.sign({id}, process.env.JWT_SECRET as jwt.Secret, {

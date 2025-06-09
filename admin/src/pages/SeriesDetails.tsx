@@ -204,6 +204,51 @@ const SeriesDetails = () => {
         </button>
       </div>
 
+
+      
+      {/* Comments Input */}
+      <div className="max-w-4xl mx-auto mt-16">
+        <h2 className="text-2xl font-semibold mb-4">Leave a Comment</h2>
+
+      </div>
+
+      {/* Comment List */}
+      <div className="max-w-4xl mx-auto mt-10">
+        <h2 className="text-2xl font-semibold mb-6">Comments ({serie.comments.length})</h2>
+        {serie.comments.length === 0 ? (
+          <p className="text-gray-400">No comments yet. Be the first to comment!</p>
+        ) : (
+          <div className="space-y-6">{serie.comments.map((comment, index) => (
+            <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-sm">
+              <div className="flex items-center justify-between">
+                <p className="text-yellow-400 font-medium">{comment.userName}</p>
+                <span className="text-xs text-gray-500">#{index + 1}</span>
+              </div>
+              <p className="text-gray-300 mt-2">{comment.text}</p>
+              
+          
+          
+              {/* Replies Display */}
+              {serie.comments.replies && serie.comments.replies.length > 0 && (
+                <div className="mt-4 pl-6 border-l border-gray-700 space-y-3">
+                  {serie.comments.replies.map((reply, rIndex) => (
+                    <div
+                      key={rIndex}
+                      className="bg-gray-700 p-3 rounded-lg"
+                    >
+                      <p className="text-purple-400 font-medium">{reply.userName}</p>
+                      <p className="text-gray-200">{reply.text}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+          
+          </div>
+        )}
+      </div>
+
       {/* Season Modal */}
       {showSeasonModal && (
         <div className="fixed inset-0 bg-black/90 flex justify-center items-center z-50">
