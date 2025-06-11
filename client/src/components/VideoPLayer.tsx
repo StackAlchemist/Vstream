@@ -1,6 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX, Maximize, X } from "lucide-react";
-import { Loader2 } from "lucide-react"; // for loading spinner
+import { Play, Pause, Volume2, VolumeX, Maximize, X, Loader2 } from "lucide-react";
 
 const formatTime = (seconds: number) => {
   const mins = Math.floor(seconds / 60);
@@ -8,14 +7,41 @@ const formatTime = (seconds: number) => {
   return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
 };
 
-const VideoPlayer = ({ onClose, movieId, seriesId, seasonIndex, episodeIndex }: { onClose: () => void, movieId: string, seriesId: string, seasonIndex: number | null, episodeIndex: number | null }) => {
+const VideoPlayer = ({
+  onClose,
+  movieId,
+  seriesId,
+  seasonIndex,
+  episodeIndex,
+  onEnded,
+}: {
+  onClose: () => void;
+  movieId: string;
+  seriesId: string;
+  seasonIndex: number | null;
+  episodeIndex: number | null;
+  onEnded: () => void;
+}) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressRef = useRef<HTMLInputElement>(null);
+  const countdownRef = useRef<NodeJS.Timeout | null>(null);
+
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  const [showNextPopup, setShowNextPopup] = useState(false);
+  const [countdown, setCountdown] = useState(5);
+
+
+
+  const handlePlayNextNow = () => {
+    if (countdownRef.current) clearInterval(countdownRef.current);
+    onEnded();
+    setShowNextPopup(false);
+  };
 
   useEffect(() => {
     const video = videoRef.current;
@@ -25,14 +51,28 @@ const VideoPlayer = ({ onClose, movieId, seriesId, seasonIndex, episodeIndex }: 
     const setVideoDuration = () => setDuration(video.duration);
     const startLoading = () => setLoading(true);
     const stopLoading = () => setLoading(false);
+    const handleEnded = () => {
+      setShowNextPopup(true);
+      setCountdown(5);
+      countdownRef.current = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(countdownRef.current!);
+            onEnded();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    };
 
     video.addEventListener("timeupdate", updateTime);
     video.addEventListener("loadedmetadata", setVideoDuration);
     video.addEventListener("waiting", startLoading);
     video.addEventListener("playing", stopLoading);
     video.addEventListener("loadeddata", stopLoading);
+    video.addEventListener("ended", handleEnded);
 
-    // Play the video immediately
     video.load();
     video.play();
 
@@ -42,6 +82,8 @@ const VideoPlayer = ({ onClose, movieId, seriesId, seasonIndex, episodeIndex }: 
       video.removeEventListener("waiting", startLoading);
       video.removeEventListener("playing", stopLoading);
       video.removeEventListener("loadeddata", stopLoading);
+      video.removeEventListener("ended", handleEnded);
+      if (countdownRef.current) clearInterval(countdownRef.current);
     };
   }, []);
 
@@ -91,15 +133,21 @@ const VideoPlayer = ({ onClose, movieId, seriesId, seasonIndex, episodeIndex }: 
         </button>
 
         <div className="relative w-full aspect-video bg-gray-900">
- {  movieId ?        <video
-            ref={videoRef}
-            className="w-full h-full object-cover"
-            src={`${import.meta.env.VITE_API_URL}/movies/video/${movieId}`}
-            autoPlay
-          /> : <video ref={videoRef} className="w-full h-full object-cover"
-                src={`${import.meta.env.VITE_API_URL}/series/video/${seriesId}/${seasonIndex}/${episodeIndex}`}
-                autoPlay
-          />}
+          {movieId ? (
+            <video
+              ref={videoRef}
+              className="w-full h-full object-cover"
+              src={`${import.meta.env.VITE_API_URL}/movies/video/${movieId}`}
+              autoPlay
+            />
+          ) : (
+            <video
+              ref={videoRef}
+              className="w-full h-full object-cover"
+              src={`${import.meta.env.VITE_API_URL}/series/video/${seriesId}/${seasonIndex}/${episodeIndex}`}
+              autoPlay
+            />
+          )}
 
           {/* Loading spinner overlay */}
           {loading && (
@@ -139,6 +187,25 @@ const VideoPlayer = ({ onClose, movieId, seriesId, seasonIndex, episodeIndex }: 
               </button>
             </div>
           </div>
+
+          {/* Play Next Episode Popup */}
+          {showNextPopup && (
+  <div className="absolute bottom-6 right-6 z-20">
+    <div className="bg-[#141414] text-white rounded-md p-5 w-72 shadow-lg animate-fade-in-up">
+      <h2 className="text-lg font-bold mb-2">Up Next</h2>
+      <p className="text-sm mb-4 text-gray-300">
+        Playing in {countdown} second{countdown !== 1 ? "s" : ""}...
+      </p>
+      <button
+        onClick={handlePlayNextNow}
+        className="w-full bg-white text-black text-sm font-semibold py-2 rounded hover:bg-gray-200 transition"
+      >
+        Play Now
+      </button>
+    </div>
+  </div>
+)}
+
         </div>
       </div>
     </div>

@@ -89,6 +89,26 @@ const SeriesDetails = () => {
     fetchSeries();
   }, [id, comment]);
 
+  const playNextEpisode = () => {
+    if (selectedSeasonIndex === null || selectedEpisodeIndex === null || !serie) return;
+  
+    const currentSeason = serie.seasons[selectedSeasonIndex];
+  
+    if (selectedEpisodeIndex < currentSeason.episodes.length - 1) {
+      // Go to next episode in same season
+      setSelectedEpisodeIndex(selectedEpisodeIndex + 1);
+      showPopup(true);
+    } else if (selectedSeasonIndex < serie.seasons.length - 1) {
+      // Go to first episode in next season
+      setSelectedSeasonIndex(selectedSeasonIndex + 1);
+      setSelectedEpisodeIndex(0);
+      showPopup(true);
+    } else {
+      toast.info("You’ve finished the last episode!");
+    }
+  };
+  
+
   if (!serie)
     return (
       <div className="text-center text-white mt-10 h-screen flex flex-col justify-center items-center">
@@ -303,6 +323,7 @@ const SeriesDetails = () => {
           seriesId={serie._id}
           seasonIndex={selectedSeasonIndex}
           episodeIndex={selectedEpisodeIndex}
+          onEnded={playNextEpisode}
         />
       )}
     </div>

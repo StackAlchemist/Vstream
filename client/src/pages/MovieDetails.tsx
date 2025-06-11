@@ -42,7 +42,7 @@ const MovieDetails = () => {
 
   const addComment = async () => {
     try {
-      const response = await axios.post(
+      await axios.post(
         import.meta.env.VITE_API_URL + `/movies/add-comment`,
         {
           movieId: movie?._id,
@@ -57,16 +57,17 @@ const MovieDetails = () => {
       )
       setComment("")
       toast.success("Comment added successfully")
-      fetchMovie()
+      fetchMovie() // refresh after submission
     } catch (error) {
       console.error("Failed to add comment:", error)
       toast.error("Failed to add comment")
     }
   }
+  
 
   const replyComment = async (replyTo: string, reply: string) => {
     try {
-      const response = await axios.post(
+      await axios.post(
         import.meta.env.VITE_API_URL + `/movies/reply-comment`,
         {
           movieId: movie?._id,
@@ -81,16 +82,20 @@ const MovieDetails = () => {
         }
       )
       toast.success("Reply added successfully")
+      setReplyTo(null)
+      setReplyToComment("")
       fetchMovie()
     } catch (error) {
       console.error("Failed to add reply:", error)
       toast.error("Failed to add reply")
     }
   }
+  
 
   useEffect(() => {
     fetchMovie()
-  }, [id, comment])
+  }, [id]) // only run when the ID changes
+  
 
   if (loading || !movie) {
     return (
