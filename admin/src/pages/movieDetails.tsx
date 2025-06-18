@@ -5,6 +5,8 @@ import { Movies } from "../types/Movies"
 import { FaPlay } from "react-icons/fa"
 import { toast } from "react-toastify"
 import { SyncLoader } from "react-spinners"
+import { StopCircle } from "lucide-react"
+import VideoPlayer from "../components/Videoplayer"
 
 const MovieDetails = () => {
   const { id } = useParams<{ id: string }>()
@@ -14,6 +16,7 @@ const MovieDetails = () => {
   const userId: string | null = localStorage.getItem('userId')
   const navigate = useNavigate()
   const [movieDirector, setMovieDirector] = useState<string | null>(null)
+  const [popup, showPopup]  = useState<boolean>(false)
 
   const fetchMovie = async () => {
     setIsLoading(true)
@@ -110,8 +113,8 @@ const MovieDetails = () => {
               {movie?.description}
             </p>
 
-            <button className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 transition-colors duration-200 px-5 py-2 rounded-full mt-6 w-fit text-sm">
-              <FaPlay /> Play
+            <button onClick={()=>showPopup(!popup)}  className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 transition-colors duration-200 px-5 py-2 rounded-full mt-6 w-fit text-sm">
+            {!popup ? <><FaPlay /> Play</> : <> <StopCircle /> Stop</>}
             </button>
           </div>
         </div>
@@ -174,6 +177,7 @@ const MovieDetails = () => {
         </button>
       </div>
 
+      {popup && <VideoPlayer onClose={() => showPopup(false)} movieId={id} />}
       
     </div>
   )

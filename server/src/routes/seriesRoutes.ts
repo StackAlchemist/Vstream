@@ -1,5 +1,5 @@
 import express from "express";
-import { addComment, addSeason, addEpisode, deleteSeries, editSeries, getRated, getSeries, getSeriesByDir, getSeriesById, getVideo, postSeries, rating, replyComment } from "../controllers/seriesController";
+import { addComment, addSeason, addEpisode, deleteSeries, editSeries, getRated, getSeries, getSeriesByDir, getSeriesById, getVideo, postSeries, rating, replyComment, deleteEpisode, deleteSeason } from "../controllers/seriesController";
 import upload from "../middlewares/multer";
 import { requireAuth } from "../middlewares/authMiddleware";
 
@@ -33,6 +33,9 @@ seriesRouter.post(
   upload.fields([{ name: "video", maxCount: 1 }]),
   addEpisode
 );
+seriesRouter.delete('/:seriesId/season/:seasonId/episode/:episodeId', requireAuth, deleteEpisode);
+seriesRouter.delete('/:seriesId/:seasonId', requireAuth, deleteSeason)
+
 
 
 export default seriesRouter;

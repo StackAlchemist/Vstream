@@ -257,7 +257,7 @@ const SeriesDetails = () => {
 
       {/* Comment List */}
       <div className="max-w-4xl mx-auto mt-10">
-        <h2 className="text-2xl font-semibold mb-6">Comments ({serie.comments.length})</h2>
+      <h2 className="text-2xl font-semibold mb-6">Comments ({serie.comments.length + serie.comments.reduce((acc, comment) => acc + comment.replies.length, 0)})</h2>
         {serie.comments.length === 0 ? (
           <p className="text-gray-400">No comments yet. Be the first to comment!</p>
         ) : (

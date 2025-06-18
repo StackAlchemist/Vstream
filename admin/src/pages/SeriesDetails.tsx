@@ -2,25 +2,31 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Series } from "../types/Series";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { FaPlay } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Play, Trash2 } from "lucide-react";
+import { SyncLoader } from "react-spinners";
+import VideoPlayer from "../components/Videoplayer";
 
 const SeriesDetails = () => {
   const { id } = useParams<{ id: string }>();
   const [serie, setSerie] = useState<Series | null>(null);
   const [showSeasonModal, setShowSeasonModal] = useState(false);
   const [showEpisodeModal, setShowEpisodeModal] = useState<string | null>(null);
+  const [popup, showPopup] = useState(false);
   const [seasonTitle, setSeasonTitle] = useState("");
   const [episodeTitle, setEpisodeTitle] = useState("");
   const [episodeDesc, setEpisodeDesc] = useState("");
   const [selectedSeasonId, setSelectedSeasonId] = useState("");
   const [selectedVideoFile, setSelectedVideoFile] = useState<File | null>(null);
   const [openSeasonIndex, setOpenSeasonIndex] = useState<number | null>(null);
+  const [selectedSeasonIndex, setSelectedSeasonIndex] = useState<number | null>(null);
+  const [selectedEpisodeIndex, setSelectedEpisodeIndex] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false); // Added loading state
   const authToken: string | null = localStorage.getItem("authToken");
   const navigate = useNavigate();
 
   const fetchMovie = async () => {
+    setLoading(true); // Set loading to true before fetching
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/series/get/${id}`,
@@ -31,12 +37,16 @@ const SeriesDetails = () => {
         }
       );
       setSerie(response.data.series);
+      console.log(response.data.series)
     } catch (error) {
       console.error("Failed to fetch movie:", error);
+    } finally {
+      setLoading(false); // Set loading to false after fetching
     }
   };
 
   const deleteSeries = async () => {
+    setLoading(true); // Set loading to true before deleting
     try {
       const response = await axios.delete(
         `${import.meta.env.VITE_API_URL}/series/delete/${id}`
@@ -49,10 +59,13 @@ const SeriesDetails = () => {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false); // Set loading to false after deleting
     }
   };
 
   const addSeason = async () => {
+    setLoading(true); // Set loading to true before adding season
     try {
       await axios.post(
         `${import.meta.env.VITE_API_URL}/series/${id}/add-season`,
@@ -62,13 +75,16 @@ const SeriesDetails = () => {
       toast.success("Season added!");
       setSeasonTitle("");
       setShowSeasonModal(false);
-      fetchMovie();
+      fetchMovie(); // Fetch movie again to update the state
     } catch (err) {
       toast.error("Failed to add season");
+    } finally {
+      setLoading(false); // Set loading to false after adding season
     }
   };
 
   const addEpisode = async () => {
+    setLoading(true); // Set loading to true before adding episode
     try {
       const formData = new FormData();
       formData.append("ep_title", episodeTitle);
@@ -93,11 +109,77 @@ const SeriesDetails = () => {
       setEpisodeDesc("");
       setSelectedVideoFile(null);
       setShowEpisodeModal(null);
-      fetchMovie();
+      fetchMovie(); // Fetch movie again to update the state
     } catch (err) {
       toast.error("Failed to add episode");
+    } finally {
+      setLoading(false); // Set loading to false after adding episode
     }
   };
+
+
+  const deleteEpisode = async (seasonId: string, episodeId: string) => {
+    setLoading(true);
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/series/${id}/season/${seasonId}/episode/${episodeId}`,
+        // /:seriesId/season/:seasonId/episode/:episodeId
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+      toast.success("Episode deleted!");
+      fetchMovie(); // Refresh the series data
+    } catch (error) {
+      console.log(error)
+      toast.error("Failed to delete episode");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteSeason = async (seasonId: string)=>{
+    setLoading(true);
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/series/${id}/${seasonId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+      toast.success("Season deleted!");
+      fetchMovie(); // Refresh the series data
+    } catch (error) {
+      console.log(error)
+      toast.error("Failed to delete season");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const playNextEpisode = () => {
+    if (selectedSeasonIndex === null || selectedEpisodeIndex === null || !serie) return;
+  
+    const currentSeason = serie.seasons[selectedSeasonIndex];
+  
+    if (selectedEpisodeIndex < currentSeason.episodes.length - 1) {
+      // Go to next episode in same season
+      setSelectedEpisodeIndex(selectedEpisodeIndex + 1);
+      showPopup(true);
+    } else if (selectedSeasonIndex < serie.seasons.length - 1) {
+      // Go to first episode in next season
+      setSelectedSeasonIndex(selectedSeasonIndex + 1);
+      setSelectedEpisodeIndex(0);
+      showPopup(true);
+    } else {
+      toast.info("You’ve finished the last episode!");
+    }
+  };
+  
 
   useEffect(() => {
     fetchMovie();
@@ -109,7 +191,12 @@ const SeriesDetails = () => {
     }
   }, [authToken, navigate]);
 
-  if (!serie) return <p className="text-center text-white mt-10">Loading...</p>;
+  if (!serie || loading ) return(
+  <div className="flex flex-col items-center justify-center h-screen text-white">
+  <SyncLoader color="#805ad5" />
+  <p className="mt-4 text-lg">Loading your content...</p>
+</div>);
+
 
   return (
     <div className="text-white min-h-screen py-10 px-4 bg-gradient-to-b from-gray-900 to-black">
@@ -129,14 +216,22 @@ const SeriesDetails = () => {
 
               return (
                 <div key={seasonIndex} className="border border-gray-700 rounded-xl overflow-hidden">
+                  <div className="flex">
+                    <button onClick={()=>deleteSeason(season._id)} className="hover:bg-red-500/50 transition-all duration-200 px-2">
+                    <Trash2 className="shake-on-hover text-white" />
+
+                    </button>
+
                   <button
-                    onClick={() =>
+                    onClick={() =>{
                       setOpenSeasonIndex(isOpen ? null : seasonIndex)
+                      setSelectedSeasonIndex(isOpen ? null : seasonIndex)}
                     }
                     className="w-full text-left px-4 py-3 bg-white/10 hover:bg-white/20 font-semibold text-lg transition-all duration-200 flex items-center justify-between"
-                  >
+                    >
                     Season {seasonIndex + 1} {isOpen ? <ChevronUp /> : <ChevronDown />}
                   </button>
+                    </div>
 
                   {isOpen && (
                     <div className="p-4 space-y-4 bg-white/5">
@@ -157,9 +252,23 @@ const SeriesDetails = () => {
                             <p className="text-sm text-gray-400">
                               {episode.description.slice(0, 100)}...
                             </p>
-                            {/* <button className="inline-flex items-center gap-2 self-start mt-2 text-sm bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-full transition-colors duration-200">
-                              <FaPlay /> Play
-                            </button> */}
+
+                            <div className="flex items-center gap-2">
+                              <button onClick={()=>{
+                                setSelectedEpisodeIndex(episodeIndex)
+                                showPopup(true)
+                              }} className="bg-purple-600 hover:bg-purple-700 transition-colors duration-200 outline-none rounded-full p-2">
+                                <Play />
+                              </button>
+
+                            <button
+  onClick={() => deleteEpisode(season._id, episode._id)}
+  className="text-sm bg-red-500 outline-none rounded-full p-2 text-white hover:underline mt-2"
+>
+  <Trash2 />
+</button>
+  </div>
+
                           </div>
                         </div>
                       ))}
@@ -190,12 +299,12 @@ const SeriesDetails = () => {
         >
           + Add Season
         </button>
-        <button
+        {/* <button
           onClick={() => navigate(`/edit/${id}`)}
           className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 px-8 rounded-full transition-all duration-200"
         >
           Edit
-        </button>
+        </button> */}
         <button
           onClick={deleteSeries}
           className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-8 rounded-full transition-all duration-200"
@@ -207,14 +316,14 @@ const SeriesDetails = () => {
 
       
       {/* Comments Input */}
-      <div className="max-w-4xl mx-auto mt-16">
+      {/* <div className="max-w-4xl mx-auto mt-16">
         <h2 className="text-2xl font-semibold mb-4">Leave a Comment</h2>
 
-      </div>
+      </div> */}
 
       {/* Comment List */}
       <div className="max-w-4xl mx-auto mt-10">
-        <h2 className="text-2xl font-semibold mb-6">Comments ({serie.comments.length})</h2>
+        <h2 className="text-2xl font-semibold mb-6">Comments ({serie.comments.length + serie.comments.reduce((acc, comment) => acc + comment.replies.length, 0)})</h2>
         {serie.comments.length === 0 ? (
           <p className="text-gray-400">No comments yet. Be the first to comment!</p>
         ) : (
@@ -229,9 +338,9 @@ const SeriesDetails = () => {
           
           
               {/* Replies Display */}
-              {serie.comments.replies && serie.comments.replies.length > 0 && (
+              {comment.replies && comment.replies.length > 0 && (
                 <div className="mt-4 pl-6 border-l border-gray-700 space-y-3">
-                  {serie.comments.replies.map((reply, rIndex) => (
+                  {comment.replies.map((reply, rIndex) => (
                     <div
                       key={rIndex}
                       className="bg-gray-700 p-3 rounded-lg"
@@ -322,6 +431,18 @@ const SeriesDetails = () => {
             </div>
           </div>
         </div>
+      )}
+
+
+{popup && (
+        <VideoPlayer
+          onClose={() => showPopup(false)}
+          movieId={""}
+          seriesId={serie._id}
+          seasonIndex={selectedSeasonIndex}
+          episodeIndex={selectedEpisodeIndex}
+          onEnded={playNextEpisode}
+        />
       )}
     </div>
   );

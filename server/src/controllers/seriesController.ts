@@ -380,3 +380,61 @@ export const addEpisode = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to add episode" });
   }
 };
+
+export const deleteEpisode = async (req: Request, res: Response) => {
+  try {
+    const { seriesId, seasonId, episodeId } = req.params;
+
+    const series = await Series.findById(seriesId);
+    if (!series) return res.status(404).json({ error: "Series not found" });
+
+    const season = series.seasons.id(seasonId);
+    if (!season) return res.status(404).json({ error: "Season not found" });
+
+    const episodeIndex = season.episodes.findIndex(ep => ep._id.toString() === episodeId);
+    if (episodeIndex === -1) return res.status(404).json({ error: "Episode not found" });
+
+    const episode = season.episodes[episodeIndex];
+
+    // Delete video file from local storage
+    const videoPath = path.resolve(__dirname, "../../uploads", path.basename(episode.video));
+    if (fs.existsSync(videoPath)) {
+      fs.unlinkSync(videoPath);
+    }
+
+    // Remove episode from array
+    season.episodes.splice(episodeIndex, 1);
+
+    await series.save();
+
+    res.status(200).json({ msg: "Episode deleted successfully", series });
+  } catch (error) {
+    console.error("Delete Episode Error:", error);
+    res.status(500).json({ error: "Failed to delete episode" });
+  }
+};
+
+
+export const deleteSeason = async (req: Request, res: Response) =>{
+  try {
+
+    const {seriesId, seasonId} = req.params;
+    const series = await Series.findById(seriesId);
+    if (!series) return res.status(404).json({ error: "Series not found" });
+
+    const season = series.seasons.id(seasonId);
+    if (!season) return res.status(404).json({ error: "Season not found" });
+
+        // Remove the season
+        series.seasons.pull(seasonId);
+
+        // Save the updated series
+        await series.save();
+    
+        res.json({ message: "Season deleted successfully" });
+    
+  } catch (error) {
+    console.error("Deletion Error:", error);
+    res.status(500).json({ error: "Failed to delete season" });
+  }
+}
