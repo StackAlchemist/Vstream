@@ -288,7 +288,7 @@ const MovieDetails = () => {
       </div>
 
       {popup && (
-        <VideoPLayer onClose={() => showPopup(false)} movieId={movie._id} />
+        <VideoPLayer onClose={() => showPopup(false)} movieId={movie._id} seriesId={""} seasonIndex={null} episodeIndex={null} onEnded={()=>{}}/>
       )}
     </div>
   )

@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Series } from "../types/Series";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -11,7 +11,6 @@ import SeriesRating from "../components/SeriesRating";
 const SeriesDetails = () => {
   const { id } = useParams<{ id: string }>();
   const [serie, setSerie] = useState<Series | null>(null);
-  const navigate = useNavigate();
   const authToken = localStorage.getItem("authToken");
   const userId = localStorage.getItem("userId");
   const [popup, showPopup] = useState(false);

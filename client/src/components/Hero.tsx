@@ -57,7 +57,7 @@ const Hero = () => {
           </button>
         </div>
       </div>
-     {popup && <VideoPlayer onClose={()=>showPopup(false)} movieId="" seriesId={selectedSeries._id} seasonIndex={0} episodeIndex={0}/>}
+     {popup && <VideoPlayer onClose={()=>showPopup(false)} movieId="" seriesId={selectedSeries._id} seasonIndex={0} episodeIndex={0} onEnded={()=>{}}/>}
     </div>
   );
 };

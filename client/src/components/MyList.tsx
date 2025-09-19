@@ -4,10 +4,11 @@ const SkeletonCard = () => (
   <div className="w-48 h-72 bg-gray-800 rounded-lg animate-pulse"></div>
 );
 
-const MovieCard = ({ title, image }: { title: string; image: string }) => (
+const MovieCard = ({ title, image }: { title: string; image: string; }) => (
   <div className="w-48 flex-shrink-0 cursor-pointer">
     <div
       className="w-full h-72 object-cover bg-gray-700 rounded-lg hover:scale-105 transition-transform"
+      style={{ backgroundImage: `url(${image})` }}
     ></div>
     <p className="mt-2 text-white text-sm text-center">{title}</p>
   </div>
