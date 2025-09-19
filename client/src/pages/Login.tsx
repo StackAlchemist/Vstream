@@ -5,7 +5,6 @@ import { toast } from "react-toastify";
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState<boolean>(true);
-  const [token, setToken] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [name, setName] = useState<string>('');

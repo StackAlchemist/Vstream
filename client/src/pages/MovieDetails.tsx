@@ -1,34 +1,56 @@
 import axios from "axios"
 import { useEffect, useState } from "react"
-import { NavigateFunction, useNavigate, useParams } from "react-router-dom"
-import { Movies } from "../types/Movies"
+import {  useParams } from "react-router-dom"
 import { FaPlay } from "react-icons/fa"
 import { toast } from "react-toastify"
 import VideoPLayer from "../components/VideoPLayer"
 import { StopCircle } from "lucide-react"
 import Rating from "../components/Rating"
 
+// Define Movie type properly
+interface MovieCommentReply {
+  userName: string
+  text: string
+}
+
+interface MovieComment {
+  userId: string
+  userName: string
+  text: string
+  replies?: MovieCommentReply[]
+}
+
+interface Movie {
+  _id: string
+  title: string
+  description: string
+  coverImg: string
+  genre: string[]
+  comments: MovieComment[]
+}
+
 const MovieDetails = () => {
-  const { id } = useParams<{ id: string }>()
-  const [movie, setMovie] = useState<Movies | null>(null)
+  const { id } = useParams() as { id: string }
+  const [movie, setMovie] = useState<Movie | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
-  const navigate: NavigateFunction = useNavigate()
-  const authToken: string | null = localStorage.getItem('authToken')
-  const [popup, showPopup]  = useState<boolean>(false)
+  // const navigate  = useNavigate()
+  const authToken = localStorage.getItem("authToken") as string | null
+  const [popup, showPopup] = useState<boolean>(false)
   const [comment, setComment] = useState<string>("")
   const [director, setDirector] = useState<string>("")
-  const userId: string | null = localStorage.getItem('userId')
+  const userId = localStorage.getItem("userId") as string | null
   const [replyTo, setReplyTo] = useState<string | null>(null)
   const [replyToComment, setReplyToComment] = useState<string>("")
+
   const fetchMovie = async () => {
     try {
       setLoading(true)
       const response = await axios.get(
-        import.meta.env.VITE_API_URL + `/movies/get/${id}` ,
+        import.meta.env.VITE_API_URL + `/movies/get/${id}`,
         {
-          headers:{
-            'Authorization': `Bearer ${authToken}`
-          }
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
         }
       )
       setMovie(response.data.movie)
@@ -41,18 +63,19 @@ const MovieDetails = () => {
   }
 
   const addComment = async () => {
+    if (!movie?._id || !userId) return
     try {
       await axios.post(
         import.meta.env.VITE_API_URL + `/movies/add-comment`,
         {
-          movieId: movie?._id,
+          movieId: movie._id,
           userId: userId,
-          comment: comment
+          comment: comment,
         },
         {
           headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
+            Authorization: `Bearer ${authToken}`,
+          },
         }
       )
       setComment("")
@@ -63,22 +86,22 @@ const MovieDetails = () => {
       toast.error("Failed to add comment")
     }
   }
-  
 
   const replyComment = async (replyTo: string, reply: string) => {
+    if (!movie?._id || !userId) return
     try {
       await axios.post(
         import.meta.env.VITE_API_URL + `/movies/reply-comment`,
         {
-          movieId: movie?._id,
+          movieId: movie._id,
           userId: userId,
           replyTo: replyTo,
-          comment: reply
+          comment: reply,
         },
         {
           headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
+            Authorization: `Bearer ${authToken}`,
+          },
         }
       )
       toast.success("Reply added successfully")
@@ -90,12 +113,10 @@ const MovieDetails = () => {
       toast.error("Failed to add reply")
     }
   }
-  
 
   useEffect(() => {
     fetchMovie()
-  }, [id]) // only run when the ID changes
-  
+  }, [id])
 
   if (loading || !movie) {
     return (
@@ -153,17 +174,34 @@ const MovieDetails = () => {
               {movie.description}
             </p>
 
-            <button onClick={()=>showPopup(!popup)} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 transition-colors duration-200 px-6 py-2 rounded-full w-fit text-sm font-medium shadow-lg">
-              {!popup ? <><FaPlay /> Play</> : <> <StopCircle /> Stop</>}
+            <button
+              onClick={() => showPopup(!popup)}
+              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 transition-colors duration-200 px-6 py-2 rounded-full w-fit text-sm font-medium shadow-lg"
+            >
+              {!popup ? (
+                <>
+                  <FaPlay /> Play
+                </>
+              ) : (
+                <>
+                  <StopCircle /> Stop
+                </>
+              )}
             </button>
           </div>
 
-          <Rating onRate={(val) => {console.log(val)}} movieId={movie._id} token={authToken}/>
+          <Rating
+            onRate={(val) => {
+              console.log(val)
+            }}
+            movieId={movie._id}
+            token={authToken || ""}
+          />
         </div>
       </div>
 
-           {/* Comments Input */}
-           <div className="max-w-4xl mx-auto mt-16">
+      {/* Comments Input */}
+      <div className="max-w-4xl mx-auto mt-16">
         <h2 className="text-2xl font-semibold mb-4">Leave a Comment</h2>
         <div className="bg-gray-800 p-4 rounded-xl shadow-md flex flex-col gap-4">
           <textarea
@@ -184,65 +222,74 @@ const MovieDetails = () => {
 
       {/* Comment List */}
       <div className="max-w-4xl mx-auto mt-10">
-        <h2 className="text-2xl font-semibold mb-6">Comments ({movie.comments.length})</h2>
+        <h2 className="text-2xl font-semibold mb-6">
+          Comments ({movie.comments.length})
+        </h2>
         {movie.comments.length === 0 ? (
-          <p className="text-gray-400">No comments yet. Be the first to comment!</p>
+          <p className="text-gray-400">
+            No comments yet. Be the first to comment!
+          </p>
         ) : (
-          <div className="space-y-6">{movie.comments.map((comment, index) => (
-            <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-sm">
-              <div className="flex items-center justify-between">
-                <p className="text-yellow-400 font-medium">{comment.userName}</p>
-                <span className="text-xs text-gray-500">#{index + 1}</span>
-              </div>
-              <p className="text-gray-300 mt-2">{comment.text}</p>
-              
-              <button
-                className="text-purple-600 hover:text-purple-700"
-                onClick={() => setReplyTo(comment.userId)}
-              >
-                Reply
-              </button>
-          
-              {replyTo === comment.userId && (
-                <div className="mt-2">
-                  <textarea
-                    value={replyToComment}
-                    onChange={(e) => setReplyToComment(e.target.value)}
-                    placeholder="Write your reply..."
-                    className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-purple-600"
-                    rows={2}
-                  ></textarea>
-                  <button
-                    onClick={() => replyComment(comment.userId, replyToComment) }
-                    className="mt-2 bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-md font-semibold text-white"
-                  >
-                    Submit Reply
-                  </button>
+          <div className="space-y-6">
+            {movie.comments.map((comment, index) => (
+              <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-sm">
+                <div className="flex items-center justify-between">
+                  <p className="text-yellow-400 font-medium">
+                    {comment.userName}
+                  </p>
+                  <span className="text-xs text-gray-500">#{index + 1}</span>
                 </div>
-              )}
-          
-              {/* Replies Display */}
-              {comment.replies && comment.replies.length > 0 && (
-                <div className="mt-4 pl-6 border-l border-gray-700 space-y-3">
-                  {comment.replies.map((reply, rIndex) => (
-                    <div
-                      key={rIndex}
-                      className="bg-gray-700 p-3 rounded-lg"
+                <p className="text-gray-300 mt-2">{comment.text}</p>
+
+                <button
+                  className="text-purple-600 hover:text-purple-700"
+                  onClick={() => setReplyTo(comment.userId)}
+                >
+                  Reply
+                </button>
+
+                {replyTo === comment.userId && (
+                  <div className="mt-2">
+                    <textarea
+                      value={replyToComment}
+                      onChange={(e) => setReplyToComment(e.target.value)}
+                      placeholder="Write your reply..."
+                      className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-purple-600"
+                      rows={2}
+                    ></textarea>
+                    <button
+                      onClick={() =>
+                        replyComment(comment.userId, replyToComment)
+                      }
+                      className="mt-2 bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-md font-semibold text-white"
                     >
-                      <p className="text-purple-400 font-medium">{reply.userName}</p>
-                      <p className="text-gray-200">{reply.text}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-          
+                      Submit Reply
+                    </button>
+                  </div>
+                )}
+
+                {/* Replies Display */}
+                {comment.replies && comment.replies.length > 0 && (
+                  <div className="mt-4 pl-6 border-l border-gray-700 space-y-3">
+                    {comment.replies.map((reply, rIndex) => (
+                      <div key={rIndex} className="bg-gray-700 p-3 rounded-lg">
+                        <p className="text-purple-400 font-medium">
+                          {reply.userName}
+                        </p>
+                        <p className="text-gray-200">{reply.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         )}
       </div>
 
-      {popup && <VideoPLayer onClose={() => showPopup(false)} movieId={movie._id} />}
+      {popup && (
+        <VideoPLayer onClose={() => showPopup(false)} movieId={movie._id} />
+      )}
     </div>
   )
 }

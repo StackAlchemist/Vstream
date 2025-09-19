@@ -1,13 +1,13 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Series } from "../types/Series";
-import { useNavigate } from "react-router-dom";
+import { NavigateFunction, useNavigate } from "react-router-dom";
 
 const SkeletonCard = () => (
   <div className="w-48 h-72 bg-gray-800 rounded-lg animate-pulse"></div>
 );
 
-const MovieCard = ({ title, image, id, navigate }: { title: string; image: string, id: string, navigate: React.FC }) => (
+const MovieCard = ({ title, image, id, navigate }: { title: string; image: string, id: string, navigate: NavigateFunction}) => (
   <div onClick={()=>navigate(`/series/${id}`)} className="w-48 relative flex-shrink-0 cursor-pointer hover:scale-105 transition-transform duration-300 group">
     <img
       src={image}
