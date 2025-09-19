@@ -1,27 +1,35 @@
-import jwt from 'jsonwebtoken'
-import User from '../models/userModel'
-import { Request, Response, NextFunction } from 'express'
-import dotenv from 'dotenv'
+import jwt from "jsonwebtoken";
+import User from "../models/userModel";
+import { Request, Response, NextFunction } from "express";
+import dotenv from "dotenv";
+import { Document } from "mongoose";
 
-dotenv.config()
+dotenv.config();
 
-
-export const requireAuth = async(req: Request, res: Response, next: NextFunction)=>{
-    const { authorization } = req.headers;
-
-    if(!authorization){
-        return res.status(401).json({error: 'Authentication required'})
-    }
-
-    const token = authorization.split(' ')[1]
-
-    try{
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET as jwt.Secret) as jwt.JwtPayload;
-        const {id} = decodedToken;
-        req.user = await User.findOne({_id: id}).select('name email')//select just name and email from the document with that id
-        next();
-    } catch (error){
-        console.log(error)
-        return res.status(401).json({error: 'Request is not authorized'}) 
-    }
+// Custom request type
+export interface AuthRequest extends Request {
+  user?: Document | null;
 }
+
+export const requireAuth = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  const { authorization } = req.headers;
+
+  if (!authorization) {
+    res.status(401).json({ error: "Authentication required" });
+    return; // Explicit return to satisfy Promise<void>
+  }
+
+  const token = authorization.split(" ")[1];
+
+  try {
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET as string) as jwt.JwtPayload;
+    const { id } = decodedToken;
+
+    req.user = await User.findOne({ _id: id }).select("name email");
+    next();
+  } catch (error) {
+    console.error(error);
+    res.status(401).json({ error: "Request is not authorized" });
+    return; 
+  }
+};
